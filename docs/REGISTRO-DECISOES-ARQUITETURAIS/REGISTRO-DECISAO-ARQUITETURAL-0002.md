@@ -15,7 +15,8 @@
 
 - O armazenamento em memória serve para demonstração e testes e perde dados no reinício; SQL Server é necessário para retenção.
 - A leitura continua heurística e pode errar ou não reconhecer PDFs com baixa qualidade, proteção, layout atípico ou escrita manual.
-- Em uma validação manual, o PDF não continha e-mail nem telefone no contato, então esses campos ficaram vazios como esperado; uma sequência numérica isolada foi sugerida incorretamente como telefone. Campos sugeridos precisam de revisão. Cargo e resumo continuam manuais.
+- Em uma validação manual, o PDF não continha e-mail nem telefone no contato; esses campos ficaram vazios como esperado e o falso positivo numérico foi corrigido com validação de tamanho, DDD brasileiro, prefixo internacional ou rótulo de contato. Cargo e resumo continuam manuais.
+- O timeout do OCR encerra o grupo inteiro de processos, evitando que Tesseract continue ativo após o processo pai ser interrompido.
 - OCRmyPDF não substitui isolamento de arquivos hostis. O container sem porta pública, com filesystem somente leitura, tmpfs e limites é parte obrigatória da arquitetura.
 - Não há gestão completa de contas, papéis, recuperação de senha ou MFA. O uso segue local/controlado até uma revisão de implantação.
 

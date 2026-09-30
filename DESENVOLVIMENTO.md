@@ -36,15 +36,15 @@ As verificações incluem testes unitários e HTTP, typecheck, build, auditoria 
 ### Resultado observado
 
 - Testes de contratos: **3 aprovados**.
-- Testes unitários da API: **15 aprovados**, cobrindo regras, sessão, OCR e auditoria sem PII.
+- Testes unitários da API: **18 aprovados**, cobrindo regras, sessão, OCR e auditoria sem PII; inclui regressões para datas confundidas com telefone e formatos brasileiros válidos.
 - Testes HTTP/e2e da API: **10 aprovados**, incluindo login, rotas protegidas, cadastro público, PDF inválido e upload acima de 5 MB.
 - Testes de interface: **8 aprovados**, incluindo cadastro anônimo, correção de sugestões e marcador obrigatório junto ao label.
 - `npm run typecheck`: **concluído** nos três workspaces.
 - `npm run build`: **concluído** nos três workspaces; imagens Docker de API, web e OCR também foram construídas.
 - `npm run audit`: **0 vulnerabilidades**.
-- Serviço OCR no contêiner oficial `v17.12.1`: **3 testes aprovados**, incluindo extração de nome e e-mail de PDF escaneado sintético, PDF inválido e healthcheck.
+- Serviço OCR no contêiner oficial `v17.12.1`: **4 testes aprovados**, incluindo extração de nome/e-mail de PDF escaneado sintético, PDF inválido, healthcheck e encerramento do grupo de processos no timeout.
 - Compose de demonstração com override local: **iniciado** com web, API, SQL Server e OCR saudáveis. `GET /api/health` e a rota web `/candidatos/novo` responderam com HTTP 200; a tela foi conferida visualmente no navegador. O override remove `no-new-privileges` somente da API e OCR; mantém as demais restrições e não deve ser usado em produção. O arquivo base conserva essa proteção.
-- Validação manual posterior com um currículo real fornecido pelo usuário: nome identificado; e-mail e telefone não constavam no documento e ficaram vazios; uma sequência numérica isolada foi interpretada incorretamente como telefone. Esse caso evidencia um falso positivo da heurística atual e será tratado como próximo ajuste. A extração atual cobre somente nome, e-mail e telefone; cargo e resumo permanecem manuais. O PDF e os dados pessoais não foram copiados para o projeto, fixtures ou logs.
+- Validação manual com um currículo real fornecido pelo usuário, processado somente no endpoint local: o nome foi identificado, e-mail/telefone ficaram vazios porque não constavam no contato, e o falso positivo de sequência numérica foi eliminado. A extração cobre nome, e-mail e telefone; cargo e resumo permanecem manuais. O PDF e os dados pessoais não foram copiados para o projeto, fixtures ou logs.
 - O host SQL local já usa a porta 1433; este projeto publica SQL Server em `SQL_PORT=1434`.
 - Teste visual sistemático nos tamanhos 320, 375, 768 e desktop, persistência SQL após reinício e fluxo completo de cadastro/lista/detalhe: **não concluídos** nesta verificação.
 

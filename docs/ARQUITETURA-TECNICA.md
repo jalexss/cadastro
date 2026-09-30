@@ -23,7 +23,7 @@ O cadastro anônimo não recebe acesso ao registro detalhado; o frontend mostra 
 
 O serviço OCR aceita apenas assinatura PDF, limita tamanho a 5 MB, 15 páginas, 40 segundos e duas tarefas concorrentes. Arquivos ficam em diretório temporário e são removidos ao terminar. Não há OCR remoto nem persistência do arquivo.
 
-A identificação dos campos usa heurísticas sobre o texto extraído. E-mail e telefone permanecem vazios quando não aparecem no currículo. Em uma validação manual, o documento não continha esses contatos, mas uma sequência numérica isolada foi sugerida incorretamente como telefone. A pessoa deve revisar as sugestões; o PDF usado nessa validação não é distribuído no repositório. Cargo e resumo profissional são campos manuais conforme o escopo de extração atual.
+A identificação dos campos usa heurísticas sobre o texto extraído. E-mail e telefone permanecem vazios quando não aparecem no currículo. A validação manual revelou um falso positivo de telefone com uma sequência numérica de oito dígitos; a regra foi ajustada para exigir um número brasileiro plausível, prefixo internacional ou rótulo de telefone. Cargo e resumo profissional são campos manuais conforme o escopo de extração atual. O PDF usado nessa validação não é distribuído no repositório.
 
 ### Sessão e autorização
 
@@ -47,7 +47,7 @@ O seed inicial usa `AUTH_BOOTSTRAP_EMAIL` e `AUTH_BOOTSTRAP_PASSWORD`. Não há 
 - CORS restrito, Helmet, throttling global e proteção de tentativas de login.
 - Logs JSONL diários em UTC correlacionados por request ID: rota normalizada, HTTP status/duração, operação SQL/fingerprint/tempo, resultado de login e etapa/resultado/duração OCR. Sem cabeçalho Cookie, corpo, parâmetros SQL, arquivos, texto reconhecido, senha, e-mail ou dados de candidato.
 - Retenção inicial 30 dias, configurável. Logs em volume local persistente.
-- OCR em container interno sem porta publicada, filesystem root read-only, sem capabilities, tmpfs limitado, CPU/memória/processos limitados, sem shell interpolation e subprocesso com timeout. O Compose base também ativa `no-new-privileges`; o override `docker-compose.demo.yml` o desativa somente para API e OCR durante execução local neste runtime incompatível e não deve ser usado em produção.
+- OCR em container interno sem porta publicada, filesystem root read-only, sem capabilities, tmpfs limitado, CPU/memória/processos limitados, sem shell interpolation e subprocesso com timeout que encerra o grupo de processos. O Compose base também ativa `no-new-privileges`; o override `docker-compose.demo.yml` o desativa somente para API e OCR durante execução local neste runtime incompatível e não deve ser usado em produção.
 
 ## Performance e responsividade
 
