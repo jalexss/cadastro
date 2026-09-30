@@ -1,0 +1,62 @@
+.field-label-row {
+  align-items: baseline;
+  display: inline-flex;
+  gap: 4px;
+  line-height: 1.3;
+  width: fit-content;
+}
+
+.session-email { color: #718078; font-size: 11px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.logout-button, .login-link { min-height: 32px; padding: 0 10px; }
+.auth-page { margin: 0 auto; max-width: 620px; }
+.auth-card { margin: 36px auto 0; max-width: 420px; padding: 28px; }
+.auth-card h1 { font-family: Manrope, sans-serif; font-size: 26px; letter-spacing: -.6px; margin: 9px 0 6px; }
+.auth-card>p { font-size: 12px; margin: 0 0 22px; }
+.auth-card form { display: grid; gap: 17px; }
+.auth-card .alert { margin-top: 0; }
+.auth-submit { margin-top: 2px; width: 100%; }
+.auth-public-link { color: var(--green); display: block; font-size: 11px; margin-top: 18px; text-align: center; }
+.auth-public-link:hover { text-decoration: underline; }
+.public-success { margin: 0 auto; max-width: 660px; padding: 30px; text-align: center; }
+.success-check { align-items: center; background: #eaf5ee; border-radius: 50%; color: var(--green); display: inline-flex; font-size: 23px; height: 52px; justify-content: center; width: 52px; }
+.public-success h2 { font-family: Manrope, sans-serif; font-size: 20px; margin: 16px 0 7px; }
+.public-success>p { color: var(--muted); font-size: 12px; margin: 0; }
+.public-success-actions { border: 0; justify-content: center; margin-top: 20px; padding: 0; }
+
+@media (max-width: 1000px) {
+  .form-layout { grid-template-columns: minmax(0, 1fr) minmax(220px, 250px); }
+  .session-email { max-width: 170px; }
+}
+
+@media (max-width: 760px) {
+  .page-content { min-width: 0; }
+  .form-layout { grid-template-columns: minmax(0, 1fr); }
+  .form-main, .form-aside, .form-panel { min-width: 0; }
+  .form-aside { grid-row: 1; }
+  .upload-panel { align-items: flex-start; text-align: left; }
+  .upload-panel>p { max-width: none; }
+  .upload-button { max-width: 300px; }
+  .session-email { max-width: 120px; }
+  .auth-card { margin-top: 20px; }
+  .public-success { padding: 24px 18px; }
+  .public-success-actions { flex-wrap: wrap; }
+}
+
+@media (max-width: 440px) {
+  .page-content { padding-left: 14px; padding-right: 14px; }
+  .topbar { padding-left: 14px; padding-right: 14px; }
+  .topbar-actions { gap: 6px; }
+  .session-email { display: none; }
+  .form-panel { padding: 17px 13px; }
+  .form-grid { grid-template-columns: minmax(0, 1fr); }
+  .form-grid .field { grid-column: 1; min-width: 0; }
+  .field input, .field textarea { min-width: 0; }
+  .section-title { align-items: flex-start; }
+  .form-actions { flex-wrap: wrap; justify-content: space-between; }
+  .form-actions .button { flex: 1 1 130px; }
+  .auth-card { padding: 21px 17px; }
+  .public-success-actions { flex-direction: column; }
+  .public-success-actions .button { width: 100%; }
+  .table-header { gap: 10px; padding: 16px 13px; }
+  .pagination { align-items: flex-start; flex-direction: column; gap: 12px; padding: 12px 14px; }
+}
