@@ -35,6 +35,7 @@ Nesta atualização, a prova Playwright navegador–API–SQL Server também pas
 ### Regras de negócio e autenticação — 25 unitários da API
 
 - Persistência em memória: criação, paginação, detalhe e normalização do e-mail.
+- O novo método que anexa PDF a candidato existente ainda não tem teste unitário dedicado nesta atualização.
 - Serviço de candidatos: normaliza e-mail, converte opcionais vazios em valores nulos, retorna detalhes encontrados e gera NotFound para identificadores inexistentes.
 - Autenticação: compara senha com Argon2id, normaliza e-mail para busca, emite JWT e não retorna hash. Senha incorreta, conta inexistente e hash Argon2 corrompido recebem a mesma mensagem; eventos de auditoria não registram e-mail nem senha. Logout registra evento sem dados pessoais.
 - Guard de sessão: sessão válida, expirada ou token inválido.
@@ -77,6 +78,7 @@ As rotas e dependências de persistência são simuladas nos testes HTTP; eles n
 
 - A integração com SQL Server real e as migrations em uma base descartável agora têm teste dedicado. Falta automatizar persistência após reinício do contêiner da API e idempotência do seeder.
 - A automação Playwright verifica uma credencial válida e as rotas protegidas em conjunto com a API e SQL reais. Login inválido e validação de e-mail continuam cobertos nas suítes unitária e HTTP.
+- Acrescentar testes para anexar PDF em SQL e memória, rejeitar segundo anexo, bloquear usuário anônimo, validar PDF inválido/maior que 5 MB e abrir o conteúdo autenticado no navegador.
 - Os percentuais mais baixos estão em funções auxiliares de auditoria/TypeORM, abstração de seleção de persistência, diagnóstico de desempenho e componentes menos exercitados de `App`. Priorizar teste de integração SQL e caminhos completos dessas áreas.
 - A limitação de tentativas é verificada por HTTP para o endpoint de login. O armazenamento do limitador é em memória por instância; ambientes com várias réplicas precisam de armazenamento compartilhado.
 - Não há teste de renderização contra payload XSS na tela de detalhe nem corpus amplo de PDFs reais. Campos são apresentados como texto React e a extração continua heurística.

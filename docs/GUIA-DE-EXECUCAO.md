@@ -20,6 +20,7 @@ A exceção local do override está registrada na [RDA 0003](REGISTRO-DECISOES-A
 - API: `http://localhost:3000/api`
 - Saúde: `http://localhost:3000/api/health`
 - Login inicial: e-mail e senha definidos no `.env`.
+- Currículo PDF: salvo junto ao cadastro somente após validação, acessível apenas por recrutadores autenticados.
 - SQL Server: porta interna 1433 e porta local definida por `SQL_PORT` (1433 por padrão).
 
 O override `docker-compose.demo.yml` é exclusivo para demonstração local: retira `no-new-privileges` somente da API e OCR para contornar runtimes que rejeitam essa opção. As restrições read-only, `cap_drop`, limites de recursos e rede isolada permanecem. Para implantação, use apenas o arquivo base `docker-compose.yml`, que mantém `no-new-privileges`.
@@ -55,7 +56,7 @@ O seeder cria uma única conta de recrutador baseada no `.env` se o e-mail ainda
 
 ## OCR e logs
 
-O serviço OCR só é acessível pela rede interna do Compose. Ele aceita PDFs de até 5 MB, processa até 15 páginas e impõe timeout de 40 segundos e concorrência de duas tarefas. PDF.js atende PDFs com texto; OCRmyPDF/Tesseract (`por+eng`) é fallback para digitalizados. Um erro é recuperável: use o formulário manual. O OCR não lê manuscritos de forma confiável e não promete precisão universal.
+O serviço OCR só é acessível pela rede interna do Compose. Ele aceita PDFs de até 5 MB, processa até 15 páginas e impõe timeout de 40 segundos e concorrência de duas tarefas. PDF.js atende PDFs com texto; OCRmyPDF/Tesseract (`por+eng`) é fallback para digitalizados. Um erro é recuperável: use o formulário manual, sem anexar o arquivo. Ao salvar um currículo legível, a API o guarda como binário no SQL Server ou temporariamente no adaptador `memory`. O botão de visualização só aparece quando o registro contém PDF, e a rota exige sessão de recrutador. Se um registro antigo não possui arquivo, abra os detalhes autenticado e use **Anexar currículo PDF**; após a validação e o envio, a tela passa a exibir **Visualizar currículo PDF**. O endpoint não permite substituir um arquivo já anexado. O original não é copiado para os logs; o OCR não lê manuscritos de forma confiável e não promete precisão universal.
 
 Compose monta logs em volume; em ambiente local `LOG_DIRECTORY` escolhe o diretório. Arquivos `auditoria-AAAA-MM-DD.jsonl` usam UTC e retenção configurável em `LOG_RETENTION_DAYS` (30 dias). Conteúdo de currículo e dados pessoais não são registrados.
 

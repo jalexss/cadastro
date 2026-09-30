@@ -1,6 +1,6 @@
 # RDA 0002 — Acesso, persistência selecionável e OCR local
 
-- **Estado:** aceita; extração de cargo e resumo complementada pela RDA 0004
+- **Estado:** aceita; extração de cargo e resumo complementada pela RDA 0004; retenção do currículo substituída pela RDA 0006
 - **Contexto:** evoluir a demonstração para permitir cadastro público, proteger consultas de candidatos, alternar persistência e processar PDFs digitalizados. Esta decisão substitui as decisões de ausência de autenticação e OCR em texto puro da RDA 0001.
 
 ## Decisões
@@ -24,4 +24,4 @@
 
 - OAuth/OIDC: rejeitado para esta prova por não existir provedor requerido e por exigir configuração externa; login local atende o acesso controlado.
 - OCR em nuvem: rejeitado para evitar transferir currículos pessoais e criar dependência externa.
-- Guardar temporariamente o PDF em disco persistente: rejeitado porque não é necessário para a extração e ampliaria retenção de dados pessoais.
+- Guardar temporariamente o PDF em disco persistente: decisão original rejeitada porque não era necessário à extração. A necessidade posterior de visualização levou à persistência controlada no banco, registrada na RDA 0006.

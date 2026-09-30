@@ -1,6 +1,6 @@
 # RDA 0001 — Stack e limites de processamento do currículo
 
-- **Estado:** substituída pela RDA 0002 para autenticação e OCR; decisões de stack, SQL Server, contratos, auditoria e validação de PDF continuam vigentes.
+- **Estado:** substituída pela RDA 0002 para autenticação e OCR e pela RDA 0006 quanto à retenção do PDF; decisões de stack, SQL Server, contratos e auditoria continuam vigentes.
 - **Contexto:** a equipe precisa cadastrar candidatos manualmente ou começar por um PDF, persistir e consultar no SQL Server, demonstrar segurança e executar a solução com Docker.
 
 ## Decisões
@@ -8,7 +8,7 @@
 1. Usar React + TypeScript + Vite no frontend e NestJS + TypeScript na API. A separação em módulos atende ao fluxo de cadastro e permite evoluir a aplicação.
 2. Usar SQL Server com TypeORM e migrations explícitas. `synchronize` fica desativado para que alterações de schema sejam revisáveis.
 3. Compartilhar contratos Zod entre browser e API, mantendo regras obrigatórias e formatos consistentes nos dois caminhos.
-4. Extrair somente texto de PDF no backend, na memória, com limite de 5 MB, validação da assinatura PDF e descarte após uso. Não haverá OCR nem armazenamento do arquivo.
+4. Decisão original: extrair texto de PDF no backend, na memória, com limite de 5 MB e descarte após uso. A ausência de OCR foi substituída pela RDA 0002, e o descarte do original foi substituído pela RDA 0006.
 5. Registrar auditoria técnica em arquivos JSONL diários UTC sem valores SQL ou conteúdo pessoal; coletar duração de HTTP e consulta lenta e fingerprints de todas as consultas.
 6. **Decisão original, posteriormente substituída:** não adicionar autenticação por não constar do requisito inicial. O novo escopo introduziu autenticação local e autorização conforme a RDA 0002.
 

@@ -13,7 +13,7 @@
 
 ### Cadastro
 
-`Formulário → Zod no browser → POST público → Zod/API → serviço de domínio → adaptador ativo → confirmação`
+`Formulário → Zod no browser → POST público (JSON ou multipart) → Zod/API → serviço de domínio → adaptador ativo → confirmação`
 
 O cadastro anônimo não recebe acesso ao registro detalhado; o frontend mostra confirmação e link para login. Candidato autenticado é levado ao detalhe, que exige sessão também na API.
 
@@ -21,7 +21,7 @@ O cadastro anônimo não recebe acesso ao registro detalhado; o frontend mostra 
 
 `PDF ≤ 5 MB → validação MIME/assinatura → PDF.js no backend → OCR local se texto < limite mínimo → heurísticas → campos parciais → formulário editável`
 
-O serviço OCR aceita apenas assinatura PDF, limita tamanho a 5 MB, 15 páginas, 40 segundos e duas tarefas concorrentes. Arquivos ficam em diretório temporário e são removidos ao terminar. Não há OCR remoto nem persistência do arquivo.
+O serviço OCR aceita apenas assinatura PDF, limita tamanho a 5 MB, 15 páginas, 40 segundos e duas tarefas concorrentes. Temporários usados pelo OCR são removidos ao terminar. Se o candidato é salvo com um PDF estruturalmente válido, o binário original é associado ao cadastro: SQL Server o persiste como `varbinary(max)` e o modo memória o mantém apenas enquanto a API estiver ativa. A migration adiciona as colunas sem apagar os registros existentes. A rota `GET /candidatos/:id/curriculo` exige sessão e responde inline sem cache; lista e detalhe carregam apenas o indicador `temCurriculo`, nunca o binário. Para cadastros anteriores sem arquivo, recrutadores autenticados podem usar `PUT /candidatos/:id/curriculo` para anexar o currículo ao registro existente, após validação do PDF. Um segundo anexo é recusado para evitar substituição silenciosa.
 
 A identificação dos campos usa heurísticas sobre o texto extraído. E-mail e telefone permanecem vazios quando não aparecem no currículo. A validação manual revelou um falso positivo de telefone com uma sequência numérica de oito dígitos; a regra foi ajustada para exigir um número brasileiro plausível, prefixo internacional ou rótulo de telefone. O cargo/área é sugerido por rótulo explícito ou por uma linha curta próxima ao nome, ignorando contatos e títulos de seção. O resumo só é sugerido quando aparece um cabeçalho conhecido (como `RESUMO PROFISSIONAL`, `PERFIL PROFISSIONAL` ou `SUMMARY`) e termina no cabeçalho seguinte reconhecido. Ambos são opcionais e editáveis. Variações de layout, fragmentação do texto por PDF/OCR e nomes diferentes para os títulos podem omitir ou classificar conteúdo incorretamente. O PDF usado na validação não é distribuído no repositório.
 
@@ -33,7 +33,7 @@ O seed inicial usa `AUTH_BOOTSTRAP_EMAIL` e `AUTH_BOOTSTRAP_PASSWORD`. Não há 
 
 ### Consulta
 
-`GET lista paginada → seleção restrita de colunas e paginação no SQL Server ou adapter de memória`
+`GET lista paginada → seleção restrita de colunas, incluindo temCurriculo, e paginação no SQL Server ou adapter de memória`
 
 `GET detalhe/:id → busca única por identificador`
 
@@ -51,4 +51,4 @@ O seed inicial usa `AUTH_BOOTSTRAP_EMAIL` e `AUTH_BOOTSTRAP_PASSWORD`. Não há 
 
 ## Performance e responsividade
 
-Listagem com limite de 100 registros e colunas explícitas; detalhe por consulta direta. O painel local usa Performance API/Web Vitals e React Profiler, sem enviar dados externos. A interface usa breakpoints para telas estreitas e campos obrigatórios indicados ao lado do label.
+Listagem com limite de 100 registros e colunas explícitas; o binário do PDF não participa das consultas comuns; detalhe por consulta direta. O painel local usa Performance API/Web Vitals e React Profiler, sem enviar dados externos. A interface usa breakpoints para telas estreitas e campos obrigatórios indicados ao lado do label.

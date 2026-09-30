@@ -38,6 +38,36 @@ As versões npm estão fixadas no `package-lock.json`. O runtime é Node 24 LTS.
 
 O login inicial é criado pelo seeder com `AUTH_BOOTSTRAP_EMAIL` e `AUTH_BOOTSTRAP_PASSWORD`. Não há credenciais demonstrativas no repositório nem tela de criação de recrutador. A sessão dura oito horas e usa cookie `HttpOnly`; em produção configure HTTPS e `COOKIE_SECURE=true`.
 
+## Demonstração visual
+
+As capturas abaixo ilustram o cadastro manual, o preenchimento sugerido a partir de um currículo, a confirmação do cadastro e as telas da equipe autenticada.
+
+### Cadastro manual
+
+![Formulário público para cadastro manual de candidato](docs/imagens/cadastro-manual.png)
+
+### Cadastro com currículo PDF
+
+![Formulário preenchido com sugestões extraídas de um currículo PDF fictício](docs/imagens/cadastro-com-pdf.png)
+
+### Confirmação do cadastro
+
+![Mensagem de confirmação após salvar o cadastro](docs/imagens/cadastro-sucesso.png)
+
+### Acesso da equipe de recrutamento
+
+![Tela de login da equipe de recrutamento](docs/imagens/login-recrutador.png)
+
+### Lista de candidatos
+
+![Lista de candidatos disponível para a equipe autenticada](docs/imagens/lista-de-candidatos.png)
+
+### Detalhes do candidato
+
+![Detalhes do candidato com o currículo anexado e a ação para visualizar o PDF](docs/imagens/detalhes-do-candidato.png)
+
+> A captura dos detalhes foi atualizada para mostrar o estado após anexar um PDF ao candidato existente: a confirmação aparece e a ação **Visualizar currículo PDF** fica disponível. As demais capturas são ilustrativas e podem representar estados anteriores à retenção do arquivo. Na versão atual, registros sem PDF oferecem **Anexar currículo PDF** na tela de detalhes; a lista e os detalhes só mostram a ação de visualização depois que existe um arquivo associado.
+
 O arquivo `docker-compose.demo.yml` remove `no-new-privileges` somente dos contêineres da API e OCR para compatibilidade com alguns runtimes locais. Ele mantém as demais restrições e é exclusivo para demonstração local. Não use esse override em produção; o arquivo base mantém a proteção.
 
 Para encerrar preservando dados: `docker compose -f docker-compose.yml -f docker-compose.demo.yml down`. Para remover também volumes locais: `docker compose -f docker-compose.yml -f docker-compose.demo.yml down -v`.
@@ -71,16 +101,20 @@ Comandos disponíveis: `npm test`, `npm run typecheck`, `npm run build`, `npm ru
 | `POST /api/auth/logout` | Público | Encerra a sessão |
 | `GET /api/auth/sessao` | Cookie de sessão | Consulta sessão atual |
 | `POST /api/candidatos/extrair-curriculo` | Público | Extrai sugestões de currículo PDF de até 5 MB |
-| `POST /api/candidatos` | Público | Cria candidato com dados validados |
+| `POST /api/candidatos` | Público | Cria candidato com dados validados e PDF opcional de até 5 MB |
 | `GET /api/candidatos?pagina=1&limite=20` | Recrutador | Lista dados paginados |
 | `GET /api/candidatos/:id` | Recrutador | Consulta detalhe por UUID |
+| `GET /api/candidatos/:id/curriculo` | Recrutador | Visualiza o PDF associado ao candidato |
+| `PUT /api/candidatos/:id/curriculo` | Recrutador | Anexa um PDF ao candidato existente quando ainda não há arquivo associado |
 | `GET /api/health` | Público | Verifica inicialização da API |
 
 O backend protege lista e detalhe mesmo que alguém invoque a API diretamente. A criação não revela a tela de detalhe ao usuário anônimo: mostra confirmação e oferece o login.
 
 ## Leitura de currículo
 
-O backend tenta extrair a camada de texto com PDF.js. Se o documento é digitalizado ou não tem texto suficiente, envia o arquivo ao serviço OCR local com OCRmyPDF/Tesseract em português e inglês. Há limites de arquivo, páginas, texto, duração e concorrência; timeouts encerram o grupo de processos OCR, arquivos temporários são apagados e o documento original não é persistido. A extração heurística tenta identificar nome, e-mail, telefone, cargo/área de interesse e o bloco de resumo/perfil profissional. O cargo é inferido de um rótulo explícito ou de uma linha curta próxima ao nome; o resumo só é capturado quando há um cabeçalho reconhecido, até a próxima seção. Campos ausentes permanecem vazios e podem ser preenchidos manualmente. Números isolados com aparência de ano não são aceitos como telefone. A leitura não usa OCR de nuvem e pode falhar em PDFs protegidos, danificados, com baixa qualidade, rotação/layout incomum ou fontes manuscritas; revise e corrija as sugestões antes de salvar. O documento real usado na validação local não faz parte do repositório.
+O backend tenta extrair a camada de texto com PDF.js. Se o documento é digitalizado ou não tem texto suficiente, envia o arquivo ao serviço OCR local com OCRmyPDF/Tesseract em português e inglês. Há limites de arquivo, páginas, texto, duração e concorrência; timeouts encerram o grupo de processos OCR e arquivos temporários são apagados. Depois que o cadastro é salvo, um PDF válido enviado junto fica associado ao candidato no SQL Server (`varbinary(max)`) ou no adaptador de memória. Somente recrutadores autenticados podem visualizá-lo. A lista e o detalhe recebem apenas um indicador de disponibilidade; o conteúdo binário não é carregado nessas consultas. Cadastros manuais e envios sem PDF não exibem o botão. O arquivo não é incluído nos logs. A extração heurística tenta identificar nome, e-mail, telefone, cargo/área de interesse e o bloco de resumo/perfil profissional. O cargo é inferido de um rótulo explícito ou de uma linha curta próxima ao nome; o resumo só é capturado quando há um cabeçalho reconhecido, até a próxima seção. Campos ausentes permanecem vazios e podem ser preenchidos manualmente. Números isolados com aparência de ano não são aceitos como telefone. A leitura não usa OCR de nuvem e pode falhar em PDFs protegidos, danificados, com baixa qualidade, rotação/layout incomum ou fontes manuscritas; revise e corrija as sugestões antes de salvar. O documento real usado na validação local não faz parte do repositório.
+
+O PDF permanece armazenado enquanto o registro existir; esta demonstração ainda não oferece política automática de retenção nem exclusão de candidatos pela interface. Em uma implantação real, defina retenção, exclusão e controles de proteção do banco antes de receber currículos reais.
 
 OCRmyPDF declara que não foi projetado para proteger sozinho contra arquivos maliciosos. Por isso, o serviço é isolado em contêiner com limites de recursos, filesystem somente leitura, diretório temporário limitado e sem porta publicada ao host. Consulte [segurança do OCRmyPDF](https://ocrmypdf.readthedocs.io/en/latest/pdfsecurity.html) e [documentação do Tesseract](https://tesseract-ocr.github.io/tessdoc/).
 

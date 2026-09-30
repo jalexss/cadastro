@@ -13,6 +13,7 @@ Entregar uma aplicação demonstrativa para recrutamento cadastrar candidatos se
 - Confirmação do cadastro; pessoa anônima recebe convite para login e não acessa o detalhe.
 - Login local de recrutadores sem alta pública, logout e sessão em cookie HttpOnly.
 - Lista paginada e detalhes protegidos no frontend e na API.
+- PDF validado é armazenado ao salvar o cadastro ou pode ser anexado posteriormente ao registro existente por recrutador autenticado. A ação de visualização só aparece quando há arquivo; não é possível substituir o PDF já associado.
 - Alternância por `.env` entre `STORAGE_MODE=sqlserver` (padrão persistente) e `memory` (temporário), com operações equivalentes. SQL Server possui migrations não destrutivas.
 - Seeder idempotente para conta inicial baseada em segredos do ambiente. Dados sintéticos opcionais por `SEED_DEMO_DATA=true`.
 
@@ -29,5 +30,5 @@ Entregar uma aplicação demonstrativa para recrutamento cadastrar candidatos se
 
 - É uma demonstração local, sem gestão de usuários, recuperação de senha, papéis ou cadastro público de recrutadores. Configure HTTPS e revisão de implantação antes de expor em rede.
 - A extração de campos é heurística e não garante reconhecimento. Cargo depende de sua posição ou de um rótulo esperado; resumo depende de cabeçalhos conhecidos e termina no próximo cabeçalho reconhecido. PDFs protegidos, danificados, extensos, com baixa resolução, layouts atípicos e manuscritos podem falhar; a pessoa pode completar os dados manualmente.
-- O arquivo não é persistido. OCRmyPDF não é uma barreira antimalware isolada; o processamento é executado em container restrito e com limites de recursos.
+- PDFs ficam retidos junto ao cadastro até a exclusão operacional do registro; a interface ainda não oferece exclusão ou retenção automática. OCRmyPDF não é uma barreira antimalware isolada; o processamento é executado em container restrito e com limites de recursos.
 - Modo `memory` perde os registros ao reiniciar. Use SQL Server para persistência.

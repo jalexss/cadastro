@@ -1,10 +1,12 @@
 # Critérios de avaliação do desafio
 
-Este documento relaciona os critérios do desafio ao comportamento verificável da aplicação, aos comandos de demonstração e às limitações conhecidas. A avaliação abaixo descreve o estado observado em 2026-09-29; resultados de testes são separados quando não fazem parte da suíte padrão.
+Este documento relaciona os critérios do desafio ao comportamento verificável da aplicação, aos comandos de demonstração e às limitações conhecidas. Os resultados anteriores permanecem datados; as mudanças de currículo descritas abaixo foram compiladas e iniciadas em Docker em 2026-09-30, mas ainda não percorridas em teste integrado autenticado.
 
 ## 1. Funcionamento dos cadastros, listagem e detalhes
 
 **Estado: implementado e exercitado por testes e fluxo integrado.** O cadastro manual e o iniciado por PDF usam o mesmo formulário e contrato de validação. A criação e a extração do currículo são públicas; lista e detalhe exigem sessão de recrutador, conforme o escopo adicional decidido para o projeto. O candidato sintético usado no smoke test aparece na lista e no detalhe e é removido do banco ao final.
+
+**Atualização posterior:** PDFs válidos enviados no cadastro são persistidos. Na tela de detalhes, recrutadores podem anexar um PDF a registros antigos que ainda não têm arquivo; após isso, a ação de visualização fica disponível nos detalhes e na lista. A captura atualizada está em `docs/imagens/detalhes-do-candidato.png`. Migration, persistência, anexação e visualização compilaram e iniciaram em Docker; o fluxo autenticado de anexar e abrir o arquivo ainda precisa de execução de integração para ser considerado verificado.
 
 - Testes de React cobrem cadastro público, validações, sugestão editável do PDF, login recusado e login bem-sucedido.
 - O smoke test `npm run test:integration --workspace @cadastro/api` exercita cadastro público, login, listagem e detalhe na API ativa e confirma a linha no SQL Server.
@@ -36,7 +38,7 @@ O projeto inclui OCR, autenticação local, modo de memória e diagnóstico de d
 
 **Estado: bem coberto.** Nome e e-mail são obrigatórios; formato e limites são aplicados pelo mesmo schema no cliente e servidor. Os testes incluem nomes Unicode, entradas vazias, limites, e-mails malformados, campos não previstos, dados parciais de extração, e-mail inválido no login, credencial recusada e limite de tentativas. PDF é limitado a 5 MB e validado pelo tipo declarado, extensão e assinatura. Falha de leitura preserva o cadastro manual.
 
-O parser é heurístico, não garante precisão universal, não usa OCR em nuvem e pode falhar em manuscritos, baixa resolução, documentos protegidos ou layouts incomuns. A validação de e-mail verifica formato, não existência da caixa postal.
+O parser é heurístico, não garante precisão universal, não usa OCR em nuvem e pode falhar em manuscritos, baixa resolução, documentos protegidos ou layouts incomuns. PDF tem limite de 5 MB e é validado por tipo, extensão, assinatura e estrutura antes de ser armazenado/anexado. O endpoint autenticado de anexo não substitui um currículo já associado. A validação de e-mail verifica formato, não existência da caixa postal.
 
 ## 5. Relevância dos testes
 
@@ -66,6 +68,7 @@ O repositório está publicado como público em `https://github.com/jalexss/cada
 - `npm run audit`: 0 vulnerabilidades reportadas nesta execução.
 - `npm run test:cov`: cobertura registrada acima; sem limiares obrigatórios.
 - Inspeção responsiva sistemática em 320, 375, 768 px e desktop não foi repetida nesta atualização. Benchmark de carga representativo também não foi executado.
+- Atualização de persistência/visualização do PDF em 2026-09-30: typecheck, compilação das imagens Docker e inicialização dos serviços aprovados; a rota `PUT /api/candidatos/:id/curriculo` apareceu nos logs do Nest. O envio autenticado, o PDF retornado e a renderização no navegador ainda não foram validados ponta a ponta.
 
 ## Demonstração sugerida
 
