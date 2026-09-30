@@ -1,6 +1,6 @@
 # RDA 0002 — Acesso, persistência selecionável e OCR local
 
-- **Estado:** aceita
+- **Estado:** aceita; extração de cargo e resumo complementada pela RDA 0004
 - **Contexto:** evoluir a demonstração para permitir cadastro público, proteger consultas de candidatos, alternar persistência e processar PDFs digitalizados. Esta decisão substitui as decisões de ausência de autenticação e OCR em texto puro da RDA 0001.
 
 ## Decisões
@@ -15,7 +15,7 @@
 
 - O armazenamento em memória serve para demonstração e testes e perde dados no reinício; SQL Server é necessário para retenção.
 - A leitura continua heurística e pode errar ou não reconhecer PDFs com baixa qualidade, proteção, layout atípico ou escrita manual.
-- Em uma validação manual, o PDF não continha e-mail nem telefone no contato; esses campos ficaram vazios como esperado e o falso positivo numérico foi corrigido com validação de tamanho, DDD brasileiro, prefixo internacional ou rótulo de contato. Cargo e resumo continuam manuais.
+- Em uma validação manual inicial, o PDF não continha e-mail nem telefone no contato; esses campos ficaram vazios como esperado e o falso positivo numérico foi corrigido com validação de tamanho, DDD brasileiro, prefixo internacional ou rótulo de contato. A extração de cargo e resumo foi adicionada posteriormente pela RDA 0004.
 - O timeout do OCR encerra o grupo inteiro de processos, evitando que Tesseract continue ativo após o processo pai ser interrompido.
 - OCRmyPDF não substitui isolamento de arquivos hostis. O container sem porta pública, com filesystem somente leitura, tmpfs e limites é parte obrigatória da arquitetura.
 - Não há gestão completa de contas, papéis, recuperação de senha ou MFA. O uso segue local/controlado até uma revisão de implantação.

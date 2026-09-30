@@ -6,8 +6,10 @@ import { OcrCurriculoClient } from './ocr-curriculo.client';
 const MAX_PAGES = 50;
 const MAX_TEXT_LENGTH = 100_000;
 const MIN_TEXT_FOR_OCR = 60;
-const HEADING = /^(curr[ií]culo|curriculum vitae|resume|contato|dados pessoais|perfil|objetivo|experi[eê]ncia|forma[cç][aã]o|educa[cç][aã]o|habilidades|compet[eê]ncias|sobre mim)$/i;
+const HEADING = /^(curr[ií]culo|curriculum vitae|resume|contato|dados pessoais|perfil(?: profissional)?|objetivo(?: profissional)?|resumo(?: profissional)?|summary|professional summary|professional profile|experi[eê]ncia(?: profissional)?|professional experience|forma[cç][aã]o|educa[cç][aã]o|education|habilidades(?: t[eé]cnicas)?|compet[eê]ncias|skills|sobre mim|projetos?(?: relevantes)?|certifica[cç][oõ]es|idiomas)$/i;
+const SECTION_HEADING = /^(?:resumo(?: profissional)?|perfil(?: profissional)?|sobre mim|summary|professional summary|professional profile|objetivo(?: profissional)?|professional objective|experi[eê]ncia(?: profissional)?|professional experience|experi[eê]ncia|forma[cç][aã]o(?: acad[eê]mica)?|educa[cç][aã]o|education|habilidades(?: t[eé]cnicas)?|compet[eê]ncias|skills|projetos?(?: relevantes)?|certifica[cç][oõ]es|idiomas|cursos|informa[cç][oõ]es adicionais|additional information|refer[eê]ncias)$/i;
 const ROTULO_TELEFONE = /(?:telefone|tel(?:efone)?|phone|celular|mobile|whatsapp)/i;
+const ROTULO_CARGO = /^(?:cargo|cargo de interesse|[aá]rea(?: de interesse)?|[aá]rea profissional|objetivo profissional|position|desired position|professional title)\s*[:\-–—]\s*(.+)$/i;
 const DDD_BRASILEIRO = new Set([11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 24, 27, 28, 31, 32, 33, 34, 35, 37, 38, 41, 42, 43, 44, 45, 46, 47, 48, 49, 51, 53, 54, 55, 61, 62, 63, 64, 65, 66, 67, 68, 69, 71, 73, 74, 75, 77, 79, 81, 82, 83, 84, 85, 86, 87, 88, 89, 91, 93, 94, 95, 96, 97, 98, 99]);
 
 function pareceTelefone(texto: string, inicio: number, original: string): boolean {
@@ -41,12 +43,44 @@ function identificarTelefone(texto: string): string | undefined {
 export function identificarCampos(texto: string): CamposExtraidos {
   const email = texto.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0]?.toLowerCase();
   const telefone = identificarTelefone(texto);
-  const nomeCompleto = texto.split(/[\r\n]+/).map((line) => line.trim().replace(/\s+/g, ' '))
-    .find((line) => line.length >= 4 && line.length <= 100 && /\p{L}/u.test(line) && line.split(' ').length >= 2 && !line.includes('@') && !/\d/.test(line) && !HEADING.test(line));
+  const linhas = texto.split(/[\r\n]+/).map((line) => line.trim().replace(/\s+/g, ' ')).filter(Boolean);
+  const nomeIndex = linhas.findIndex((line) => line.length >= 4 && line.length <= 100 && /\p{L}/u.test(line) && line.split(' ').length >= 2 && !line.includes('@') && !/\d/.test(line) && !HEADING.test(line));
+  const nomeCompleto = nomeIndex >= 0 ? linhas[nomeIndex] : undefined;
+
+  // Muitos currículos posicionam o título profissional logo abaixo do nome.
+  // Também aceitamos rótulos explícitos e ignoramos contatos e seções nesse intervalo.
+  let areaInteresse: string | undefined;
+  if (nomeIndex >= 0) {
+    for (const linha of linhas.slice(nomeIndex + 1, nomeIndex + 7)) {
+      const rotulo = linha.match(ROTULO_CARGO);
+      if (rotulo?.[1]) { areaInteresse = rotulo[1].trim().slice(0, 140); break; }
+      if (linha.includes('@') || /https?:\/\/|www\.|linkedin|github|\d{5,}/i.test(linha) || ROTULO_TELEFONE.test(linha) || SECTION_HEADING.test(linha)) continue;
+      if (/\p{L}/u.test(linha) && linha.length >= 3 && linha.length <= 140) { areaInteresse = linha; break; }
+    }
+  }
+
+  // Resume apenas o bloco associado a um cabeçalho conhecido, para não converter
+  // o currículo inteiro em resumo profissional.
+  let resumoProfissional: string | undefined;
+  const indiceResumo = linhas.findIndex((linha) => /^(?:resumo(?: profissional)?|perfil(?: profissional)?|sobre mim|summary|professional summary|professional profile)\s*:?\s*(.*)$/i.test(linha.normalize('NFD').replace(/[\u0300-\u036f]/g, '')));
+  if (indiceResumo >= 0) {
+    const trecho: string[] = [];
+    const titulo = linhas[indiceResumo].match(/^(?:resumo(?: profissional)?|perfil(?: profissional)?|sobre mim|summary|professional summary|professional profile)\s*:?\s*(.*)$/i);
+    if (titulo?.[1]) trecho.push(titulo[1]);
+    for (const linha of linhas.slice(indiceResumo + 1)) {
+      if (SECTION_HEADING.test(linha)) break;
+      if (linha) trecho.push(linha);
+      if (trecho.join(' ').length >= 3000) break;
+    }
+    const resumo = trecho.join(' ').replace(/\s+/g, ' ').trim().slice(0, 3000);
+    if (resumo.length >= 30) resumoProfissional = resumo;
+  }
   return camposExtraidosSchema.parse({
     ...(nomeCompleto ? { nomeCompleto } : {}),
     ...(email ? { email } : {}),
-    ...(telefone ? { telefone } : {})
+    ...(telefone ? { telefone } : {}),
+    ...(areaInteresse ? { areaInteresse } : {}),
+    ...(resumoProfissional ? { resumoProfissional } : {})
   });
 }
 

@@ -17,6 +17,32 @@ describe('Extração de currículo', () => {
     expect(identificarCampos('Ana Silva\nana@example.com')).toEqual({ nomeCompleto: 'Ana Silva', email: 'ana@example.com' });
   });
 
+  it('identifica o cargo logo abaixo do nome e o resumo até a próxima seção', () => {
+    expect(identificarCampos([
+      'Ana Silva',
+      'Desenvolvedora Full Stack',
+      'ana@example.com',
+      'RESUMO PROFISSIONAL',
+      'Profissional com experiência em desenvolvimento de aplicações web e integração de sistemas.',
+      'Atua em equipes multidisciplinares e prioriza qualidade e colaboração.',
+      'HABILIDADES TÉCNICAS',
+      'React, Node.js e SQL Server'
+    ].join('\n'))).toEqual({
+      nomeCompleto: 'Ana Silva',
+      email: 'ana@example.com',
+      areaInteresse: 'Desenvolvedora Full Stack',
+      resumoProfissional: 'Profissional com experiência em desenvolvimento de aplicações web e integração de sistemas. Atua em equipes multidisciplinares e prioriza qualidade e colaboração.'
+    });
+  });
+
+  it('reconhece rótulo explícito de cargo sem inventar resumo ausente', () => {
+    expect(identificarCampos('Ana Silva\nCargo de interesse: Analista de Dados\nTelefone: (11) 99999-9999')).toMatchObject({
+      areaInteresse: 'Analista de Dados',
+      telefone: '(11) 99999-9999'
+    });
+    expect(identificarCampos('Ana Silva\nCargo de interesse: Analista de Dados')).not.toHaveProperty('resumoProfissional');
+  });
+
   it('ignora sequências de oito dígitos que parecem intervalos de anos', () => {
     expect(identificarCampos('Ana Silva\nFormação\n2023–2024')).toEqual({ nomeCompleto: 'Ana Silva' });
     expect(identificarCampos('Ana Silva\n20232024')).toEqual({ nomeCompleto: 'Ana Silva' });
@@ -35,11 +61,13 @@ describe('Extração de currículo', () => {
   it('usa OCR local como fallback para PDF sem camada de texto', async () => {
     const documento = { numPages: 1, getPage: vi.fn(async () => ({ getTextContent: vi.fn(async () => ({ items: [] })) })) };
     pdfjs.getDocument.mockReturnValue({ promise: Promise.resolve(documento), destroy: vi.fn(async () => undefined) });
-    const ocr = { extrairTexto: vi.fn(async () => 'Ana Silva\nana@example.com\n(11) 99999-9999') };
+    const ocr = { extrairTexto: vi.fn(async () => 'Ana Silva\nDesenvolvedora\nana@example.com\n(11) 99999-9999\nResumo profissional\nExperiência com sistemas, integração e desenvolvimento de aplicações para clientes.\nFormação\nTecnologia em Sistemas') };
     const service = new ExtracaoCurriculoService(ocr as never, { registrar: vi.fn() } as never);
 
     await expect(service.extrair(Buffer.from('%PDF-1.7 conteúdo escaneado'))).resolves.toEqual({
-      nomeCompleto: 'Ana Silva', email: 'ana@example.com', telefone: '(11) 99999-9999'
+      nomeCompleto: 'Ana Silva', email: 'ana@example.com', telefone: '(11) 99999-9999',
+      areaInteresse: 'Desenvolvedora',
+      resumoProfissional: 'Experiência com sistemas, integração e desenvolvimento de aplicações para clientes.'
     });
     expect(ocr.extrairTexto).toHaveBeenCalledOnce();
     expect(documento.getPage).toHaveBeenCalledOnce();

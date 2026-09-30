@@ -26,6 +26,7 @@ Foi utilizado **OpenAI Codex, modelo GPT-6**, como apoio de planejamento, implem
 - “Implemente cadastro anônimo e proteja lista e detalhes para recrutadores autenticados; permita alternar memória e SQL por `.env`.” A resposta virou guard de API e rotas React, contrato de persistência e seeder; ajustes foram feitos para não revelar detalhe a usuários anônimos.
 - “Adicione OCR local gratuito para currículos escaneados, com limites e sem incluir dados pessoais nos logs.” A abordagem PDF.js + OCRmyPDF/Tesseract foi revisada com documentação oficial; OCR em nuvem foi descartado. Foram adicionados limites de tamanho/páginas/tempo/concorrência, temporários e container interno restrito.
 - “Atualize README, DESENVOLVIMENTO e documentos de arquitetura em português.” O texto foi reescrito para refletir a implementação e explicitar riscos, limitações e instruções de execução.
+- “No meu currículo não estão funcionando cargo e resumo; atualize a documentação e implemente a extração.” A regra foi estendida para título próximo ao nome ou cargo rotulado e para um resumo limitado pelos cabeçalhos das seções. Foram criados testes com conteúdo sintético e a API foi validada localmente com o documento do usuário, sem imprimir nem armazenar o texto extraído.
 
 As respostas foram tratadas como sugestões. Dependências, código e documentação foram inspecionados; testes e auditoria são usados para confirmar o comportamento. Durante a primeira inicialização real da API, foi corrigido o registro de `OcrCurriculoClient` como provider de `CandidatosModule`, falha que não aparecia na compilação TypeScript. A decisão anterior de não ter autenticação/OCR foi substituída pela RDA 0002 após o novo escopo.
 
@@ -36,7 +37,7 @@ As verificações incluem testes unitários e HTTP, typecheck, build, auditoria 
 ### Resultado observado
 
 - Testes de contratos: **3 aprovados**.
-- Testes unitários da API: **18 aprovados**, cobrindo regras, sessão, OCR e auditoria sem PII; inclui regressões para datas confundidas com telefone e formatos brasileiros válidos.
+- Testes unitários da API: **20 aprovados nesta etapa**, cobrindo regras, sessão, OCR e auditoria sem PII; inclui regressões para datas confundidas com telefone, formatos brasileiros válidos, título profissional e resumo delimitado por seção.
 - Testes HTTP/e2e da API: **10 aprovados**, incluindo login, rotas protegidas, cadastro público, PDF inválido e upload acima de 5 MB.
 - Testes de interface: **8 aprovados**, incluindo cadastro anônimo, correção de sugestões e marcador obrigatório junto ao label.
 - `npm run typecheck`: **concluído** nos três workspaces.
@@ -44,7 +45,7 @@ As verificações incluem testes unitários e HTTP, typecheck, build, auditoria 
 - `npm run audit`: **0 vulnerabilidades**.
 - Serviço OCR no contêiner oficial `v17.12.1`: **4 testes aprovados**, incluindo extração de nome/e-mail de PDF escaneado sintético, PDF inválido, healthcheck e encerramento do grupo de processos no timeout.
 - Compose de demonstração com override local: **iniciado** com web, API, SQL Server e OCR saudáveis. `GET /api/health` e a rota web `/candidatos/novo` responderam com HTTP 200; a tela foi conferida visualmente no navegador. O override remove `no-new-privileges` somente da API e OCR; mantém as demais restrições e não deve ser usado em produção. O arquivo base conserva essa proteção.
-- Validação manual com um currículo real fornecido pelo usuário, processado somente no endpoint local: o nome foi identificado, e-mail/telefone ficaram vazios porque não constavam no contato, e o falso positivo de sequência numérica foi eliminado. A extração cobre nome, e-mail e telefone; cargo e resumo permanecem manuais. O PDF e os dados pessoais não foram copiados para o projeto, fixtures ou logs.
+- Validação manual com um currículo real fornecido pelo usuário, processado somente no endpoint local: foram sugeridos nome, cargo e resumo (477 caracteres); e-mail e telefone permaneceram vazios porque não foram encontrados no documento. O teste imprimiu somente as chaves identificadas, a presença dos campos e o tamanho do resumo. O PDF e o conteúdo pessoal não foram copiados para o projeto, fixtures ou logs.
 - O host SQL local já usa a porta 1433; este projeto publica SQL Server em `SQL_PORT=1434`.
 - Teste visual sistemático nos tamanhos 320, 375, 768 e desktop, persistência SQL após reinício e fluxo completo de cadastro/lista/detalhe: **não concluídos** nesta verificação.
 

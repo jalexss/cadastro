@@ -14,7 +14,10 @@ vi.mock('../api', () => ({
     sessao: vi.fn(async () => null),
     login: vi.fn(),
     logout: vi.fn(),
-    extrair: vi.fn(async () => ({ campos: { nomeCompleto: 'Ana Silva', email: 'ana@example.com' } })),
+    extrair: vi.fn(async () => ({ campos: {
+      nomeCompleto: 'Ana Silva', email: 'ana@example.com', areaInteresse: 'Desenvolvedora Full Stack',
+      resumoProfissional: 'Profissional com experiência em desenvolvimento de aplicações web e integração de sistemas.'
+    } })),
     criar: vi.fn(async () => ({ id: '45c29c2e-77e4-4b13-90a4-d5e7ea82362b', criadoEm: new Date().toISOString() }))
   }
 }));
@@ -35,6 +38,8 @@ describe('formulário de cadastro', () => {
     fireEvent.change(screen.getByLabelText('Selecionar currículo em PDF'), { target: { files: [file] } });
     await waitFor(() => expect(screen.getByLabelText(/Nome completo/)).toHaveValue('Ana Silva'));
     expect(screen.getByLabelText('E-mail *')).toHaveValue('ana@example.com');
+    expect(screen.getByLabelText('Área ou cargo de interesse')).toHaveValue('Desenvolvedora Full Stack');
+    expect(screen.getByRole('textbox', { name: /Resumo profissional/ })).toHaveValue('Profissional com experiência em desenvolvimento de aplicações web e integração de sistemas.');
     expect(screen.getByRole('status')).toHaveTextContent('Confira e complete os dados');
   });
 

@@ -37,7 +37,7 @@ export function CadastroPage() {
     try {
       const { campos } = await api.extrair(arquivo);
       setForm((atual) => ({ ...atual, ...campos }));
-      setAviso(Object.keys(campos).length ? 'Currículo lido. Confira e complete os dados antes de salvar.' : 'O currículo foi lido, mas não encontramos nome, e-mail ou telefone. Preencha os campos manualmente.');
+      setAviso(Object.keys(campos).length ? 'Currículo lido. Confira e complete os dados antes de salvar.' : 'O currículo foi lido, mas não encontramos dados para preencher. Complete o formulário manualmente.');
     } catch (error) {
       setErroArquivo(`${(error as Error).message} Seus dados continuam disponíveis para o cadastro manual.`);
     } finally { setEnviando(false); }

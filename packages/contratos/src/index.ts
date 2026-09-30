@@ -11,7 +11,9 @@ export const candidatoSchema = z.object({
 export const camposExtraidosSchema = z.object({
   nomeCompleto: z.string().max(160).optional(),
   email: z.email({ error: 'Informe um e-mail válido.' }).max(254).optional(),
-  telefone: z.string().max(40).optional()
+  telefone: z.string().max(40).optional(),
+  areaInteresse: z.string().max(140).optional(),
+  resumoProfissional: z.string().max(3000).optional()
 }).strict();
 
 export const paginaSchema = z.object({

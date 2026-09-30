@@ -23,7 +23,7 @@ O cadastro anônimo não recebe acesso ao registro detalhado; o frontend mostra 
 
 O serviço OCR aceita apenas assinatura PDF, limita tamanho a 5 MB, 15 páginas, 40 segundos e duas tarefas concorrentes. Arquivos ficam em diretório temporário e são removidos ao terminar. Não há OCR remoto nem persistência do arquivo.
 
-A identificação dos campos usa heurísticas sobre o texto extraído. E-mail e telefone permanecem vazios quando não aparecem no currículo. A validação manual revelou um falso positivo de telefone com uma sequência numérica de oito dígitos; a regra foi ajustada para exigir um número brasileiro plausível, prefixo internacional ou rótulo de telefone. Cargo e resumo profissional são campos manuais conforme o escopo de extração atual. O PDF usado nessa validação não é distribuído no repositório.
+A identificação dos campos usa heurísticas sobre o texto extraído. E-mail e telefone permanecem vazios quando não aparecem no currículo. A validação manual revelou um falso positivo de telefone com uma sequência numérica de oito dígitos; a regra foi ajustada para exigir um número brasileiro plausível, prefixo internacional ou rótulo de telefone. O cargo/área é sugerido por rótulo explícito ou por uma linha curta próxima ao nome, ignorando contatos e títulos de seção. O resumo só é sugerido quando aparece um cabeçalho conhecido (como `RESUMO PROFISSIONAL`, `PERFIL PROFISSIONAL` ou `SUMMARY`) e termina no cabeçalho seguinte reconhecido. Ambos são opcionais e editáveis. Variações de layout, fragmentação do texto por PDF/OCR e nomes diferentes para os títulos podem omitir ou classificar conteúdo incorretamente. O PDF usado na validação não é distribuído no repositório.
 
 ### Sessão e autorização
 
