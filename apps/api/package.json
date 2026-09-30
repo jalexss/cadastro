@@ -9,6 +9,8 @@
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
     "test:e2e": "vitest run --config vitest.e2e.config.mts",
+    "test:sql": "vitest run --config vitest.sql.config.mts",
+    "test:integration": "node test/fluxo-api-sql.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.build.json",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/database/data-source.ts",
     "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/database/data-source.ts"

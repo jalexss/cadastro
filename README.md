@@ -60,7 +60,7 @@ npm ci
 npm run dev
 ```
 
-Comandos disponíveis: `npm test`, `npm run typecheck`, `npm run build`, `npm run audit` e `npm run test:cov`. A cobertura por camada, os casos limite já testados e as lacunas conhecidas estão em [`docs/ESTRATEGIA-DE-TESTES.md`](docs/ESTRATEGIA-DE-TESTES.md).
+Comandos disponíveis: `npm test`, `npm run typecheck`, `npm run build`, `npm run audit` e `npm run test:cov`. A cobertura por camada, os casos limite já testados e as lacunas conhecidas estão em [`docs/ESTRATEGIA-DE-TESTES.md`](docs/ESTRATEGIA-DE-TESTES.md). Com Compose iniciado e `.env` preenchido, execute também `npm run test:sql --workspace @cadastro/api` para testar migrations e persistência numa base descartável e `npm run test:integration --workspace @cadastro/api` para verificar cadastro, login, lista e detalhe pela API real com SQL Server. Os comandos de integração criam e limpam os dados temporários; use Node.js 24.
 
 ## Acesso e API
 
@@ -96,6 +96,6 @@ OCRmyPDF declara que não foi projetado para proteger sozinho contra arquivos ma
 
 O escopo, arquitetura, guia de execução, DER e decisões estão em [`docs/`](docs/). O histórico de desenvolvimento real e uso de IA consta em [`DESENVOLVIMENTO.md`](DESENVOLVIMENTO.md).
 
-As decisões arquiteturais estão registradas em [`docs/REGISTRO-DECISOES-ARQUITETURAIS/`](docs/REGISTRO-DECISOES-ARQUITETURAIS/), incluindo a exceção do Compose para demonstração local e as regras de higiene do Git. O projeto está versionado localmente; a publicação em um repositório pessoal do GitHub ainda está pendente de confirmação de conta e visibilidade. O `.gitignore` exclui segredos, documentos pessoais, currículos e artefatos locais, mantendo apenas o PDF sintético necessário para o teste de OCR.
+As decisões arquiteturais estão registradas em [`docs/REGISTRO-DECISOES-ARQUITETURAIS/`](docs/REGISTRO-DECISOES-ARQUITETURAIS/), incluindo a exceção do Compose para demonstração local e as regras de higiene do Git. O repositório público do projeto está em [github.com/jalexss/cadastro](https://github.com/jalexss/cadastro). O `.gitignore` exclui segredos, documentos pessoais, currículos e artefatos locais, mantendo apenas o PDF sintético necessário para o teste de OCR. A relação de cada item da avaliação com o código, as verificações e as ressalvas está em [`docs/CRITERIOS-DE-AVALIACAO.md`](docs/CRITERIOS-DE-AVALIACAO.md).
 
-Execute `npm run audit` após instalar dependências e antes de entregar. Resultado observado durante esta implementação: auditoria npm sem vulnerabilidades de alta severidade; confirme novamente no ambiente de entrega porque o advisory database muda.
+Execute `npm run audit` após instalar dependências e antes de entregar. Na última verificação desta atualização, `npm audit --audit-level=high` reportou zero vulnerabilidades; confirme novamente antes da entrega porque a base de avisos de segurança muda.

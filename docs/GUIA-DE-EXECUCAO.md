@@ -45,7 +45,7 @@ npm ci
 npm run dev
 ```
 
-Comandos: `npm test`, `npm run typecheck`, `npm run build`, `npm run audit`, `npm run test:cov`. A cobertura e as limitações dos testes estão detalhadas em [`ESTRATEGIA-DE-TESTES.md`](ESTRATEGIA-DE-TESTES.md).
+Comandos: `npm test`, `npm run typecheck`, `npm run build`, `npm run audit`, `npm run test:cov`. Com Compose e `.env` ativos, `npm run test:sql --workspace @cadastro/api` cria uma base temporária, aplica migrations e verifica persistência SQL após reconexão; `npm run test:integration --workspace @cadastro/api` percorre cadastro público, login, listagem e detalhe na API ativa, confirma a linha no SQL Server e remove o candidato sintético. Use Node.js 24. O primeiro teste requer permissão para criar/remover bancos; os dois testes de integração não fazem parte de `npm test`. A cobertura e as limitações dos testes estão detalhadas em [`ESTRATEGIA-DE-TESTES.md`](ESTRATEGIA-DE-TESTES.md), e a relação com os critérios de avaliação em [`CRITERIOS-DE-AVALIACAO.md`](CRITERIOS-DE-AVALIACAO.md).
 
 ## Migrations e seeder
 

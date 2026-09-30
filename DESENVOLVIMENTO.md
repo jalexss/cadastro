@@ -6,7 +6,7 @@ O trabalho foi organizado como monorepo npm com frontend React, API NestJS e pac
 
 ## Controle de versão
 
-Em 2026-09-29 foi inicializado um repositório Git local na branch `main`, a pedido do usuário, pois o diretório ainda não possuía histórico Git. As mudanças existentes foram registradas em commits separados por documentação, workspace/contratos, API, OCR, autenticação, frontend e Docker. A publicação em um repositório pessoal do GitHub está pendente de confirmação da conta e da visibilidade. O currículo pessoal usado na validação manual não foi adicionado ao Git; somente o PDF sintético de teste faz parte dos fixtures.
+Em 2026-09-29 foi inicializado um repositório Git local na branch `main`, a pedido do usuário, pois o diretório ainda não possuía histórico Git. As mudanças foram registradas em commits separados por documentação, workspace/contratos, API, OCR, autenticação, frontend e Docker e publicadas na branch `main` do repositório pessoal público [github.com/jalexss/cadastro](https://github.com/jalexss/cadastro). A identidade dos commits foi configurada localmente para este projeto e conferida antes da publicação. O currículo pessoal usado na validação manual não foi adicionado ao Git; somente o PDF sintético de teste faz parte dos fixtures.
 
 O `.gitignore` mantém arquivos de teste automatizado que fazem parte da solução, mas exclui resultados gerados, bancos locais, credenciais e documentos pessoais. O fixture PDF de OCR é explicitamente permitido porque é sintético e necessário para reproduzir o teste de leitura.
 
@@ -35,23 +35,26 @@ As respostas foram tratadas como sugestões. Dependências, código e documenta�
 
 ## Verificação
 
-As verificações incluem testes unitários e HTTP, typecheck, build, auditoria npm, fluxo Docker/SQL Server e inspeção visual em larguras móveis e desktop. Cada item abaixo reflete a saída observada nesta execução.
+As verificações incluem testes unitários e HTTP, teste dedicado com SQL Server real, smoke test API + SQL, typecheck, build, auditoria npm, fluxo Docker e inspeção visual. Cada item abaixo indica se foi repetido nesta atualização ou pertence a uma execução anterior documentada.
 
 ### Resultado observado
 
 - Testes de contratos: **17 aprovados**, incluindo limites, pontuação Unicode, e-mails malformados e formatos de login.
 - Testes unitários da API: **25 aprovados**, cobrindo regras, sessão, OCR e auditoria sem PII; inclui conta inexistente, senha incorreta/hash corrompido com resposta genérica e candidato inexistente.
 - Testes HTTP/e2e da API: **21 aprovados**, incluindo validação do login, cookie e logout, cinco tentativas antes do bloqueio, rotas protegidas, cadastro público e PDF inválido/grande.
-- Testes de interface: **10 aprovados**, incluindo cadastro anônimo, campos sugeridos do PDF e login com e-mail inválido ou credenciais recusadas.
-- Total da suíte `npm test`: **73 aprovados**. `npm run test:cov` reportou contratos 100% em todas as métricas; API 86,86% instruções, 74,53% ramos, 69,09% funções e 92,30% linhas; frontend 69,27%, 70,37%, 56,86% e 76,19%, respectivamente. A estratégia, os casos específicos e as lacunas conhecidas estão em [`docs/ESTRATEGIA-DE-TESTES.md`](docs/ESTRATEGIA-DE-TESTES.md).
+- Testes de interface: **11 aprovados**, incluindo cadastro anônimo, campos sugeridos do PDF, validação de login, credencial recusada e login bem-sucedido até a listagem.
+- Total da suíte padrão `npm test`: **74 aprovados** — 17 de contratos, 25 unitários da API, 21 HTTP/e2e e 11 React.
+- `npm run test:sql --workspace @cadastro/api`: **1 teste aprovado contra SQL Server real**, com criação/remoção de base temporária, migrations, CRUD, paginação, detalhe e confirmação após fechar e reabrir a conexão.
+- `npm run test:integration --workspace @cadastro/api`: **aprovado contra a API e o SQL Server ativos**. Cobriu bloqueio anônimo da lista, cadastro público, login, listagem, detalhe e leitura da linha no banco; removeu o candidato sintético criado.
+- `npm run test:cov`: contratos 100% em todas as métricas; API 86,86% instruções, 74,53% ramos, 69,09% funções e 92,30% linhas; frontend 70,48%, 71,29%, 56,86% e 76,98%, respectivamente. Os limiares de cobertura não bloqueiam o build. A estratégia, os casos e as lacunas estão em [`docs/ESTRATEGIA-DE-TESTES.md`](docs/ESTRATEGIA-DE-TESTES.md).
 - `npm run typecheck`: **concluído** nos três workspaces.
 - `npm run build`: **concluído** nos três workspaces; imagens Docker de API, web e OCR também foram construídas.
-- `npm run audit`: **0 vulnerabilidades na auditoria anterior**; não foi repetida nesta revisão porque não houve alterações nas dependências ou no lockfile.
+- `npm run audit`: **0 vulnerabilidades reportadas** nesta atualização; `npm ci` também auditou 587 pacotes e encontrou 0 vulnerabilidades.
 - Serviço OCR no contêiner oficial `v17.12.1`: **4 testes aprovados**, incluindo extração de nome/e-mail de PDF escaneado sintético, PDF inválido, healthcheck e encerramento do grupo de processos no timeout.
-- Compose de demonstração com override local: **iniciado** com web, API, SQL Server e OCR saudáveis. `GET /api/health` e a rota web `/candidatos/novo` responderam com HTTP 200; a tela foi conferida visualmente no navegador. O override remove `no-new-privileges` somente da API e OCR; mantém as demais restrições e não deve ser usado em produção. O arquivo base conserva essa proteção.
+- Compose de demonstração com override local: serviços web, API, SQL Server e OCR estavam saudáveis. `GET /api/health` e `/candidatos/novo` haviam respondido com HTTP 200 em inspeção anterior; o smoke test integrado desta atualização confirmou a API e o SQL. O override remove `no-new-privileges` somente da API e OCR; mantém as demais restrições e não deve ser usado em produção. O arquivo base conserva essa proteção.
 - Validação manual com um currículo real fornecido pelo usuário, processado somente no endpoint local: foram sugeridos nome, cargo e resumo (477 caracteres); e-mail e telefone permaneceram vazios porque não foram encontrados no documento. O teste imprimiu somente as chaves identificadas, a presença dos campos e o tamanho do resumo. O PDF e o conteúdo pessoal não foram copiados para o projeto, fixtures ou logs.
 - O host SQL local já usa a porta 1433; este projeto publica SQL Server em `SQL_PORT=1434`.
-- Teste visual sistemático nos tamanhos 320, 375, 768 e desktop, persistência SQL após reinício e fluxo completo de cadastro/lista/detalhe: **não concluídos** nesta verificação.
+- Teste visual sistemático nos tamanhos 320, 375, 768 e desktop e persistência após reinício do contêiner da API: **não concluídos** nesta atualização. O fluxo API + SQL foi exercitado sem reiniciar a API; o teste SQL separado fechou e reabriu a conexão e confirmou que os registros permaneceram no banco.
 
 ## Tempo, dificuldades, limitações e melhorias
 

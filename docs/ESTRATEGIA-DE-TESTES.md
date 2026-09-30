@@ -13,11 +13,13 @@ npm run test:cov
 
 `npm test` executa, em sequência, contratos compartilhados, testes unitários da API, testes HTTP da API e testes React. A suíte deve ser executada com o runtime declarado no `package.json`; Node 20 não é suportado neste projeto.
 
+Com Compose iniciado e `.env` configurado, rode separadamente `npm run test:sql --workspace @cadastro/api` e `npm run test:integration --workspace @cadastro/api`. O primeiro usa um banco temporário descartável; o segundo faz uma chamada integrada à API e ao SQL Server ativos e remove o candidato sintético criado. Esses comandos exigem Node.js 24 e não fazem parte da suíte padrão.
+
 ## Cobertura executada nesta revisão
 
-Resultado em 2026-09-29: **73 testes aprovados** — 17 de contratos, 25 unitários da API, 21 HTTP/e2e e 10 de frontend. `npm run build` também concluiu para contratos, API e frontend. Os testes da API foram executados na imagem Docker com Node 24.
+Resultado em 2026-09-29: **74 testes aprovados** — 17 de contratos, 25 unitários da API, 21 HTTP/e2e e 11 de frontend. A integração SQL executou mais **1 teste separado** contra um SQL Server real; o smoke de API + SQL também passou e é um script de verificação, não um teste Vitest. `npm run build` concluiu para contratos, API e frontend. Os comandos foram executados na imagem Docker com Node 24.
 
-`npm run test:cov` usa V8, mede os workspaces separadamente e não inclui os testes HTTP/e2e. Nesta execução, contratos ficaram em **100%** de instruções, ramos, funções e linhas; API em **86,86% / 74,53% / 69,09% / 92,30%** (instruções/ramificações/funções/linhas); frontend em **69,27% / 70,37% / 56,86% / 76,19%**. A página `LoginPage` ficou em 95,65% de instruções e 95,23% de linhas. Esses percentuais não são metas configuradas: o comando informa cobertura, mas não falha abaixo de um limiar.
+`npm run test:cov` usa V8, mede os workspaces separadamente e não inclui os testes HTTP/e2e nem o teste SQL separado. Nesta execução, contratos ficaram em **100%** de instruções, ramos, funções e linhas; API em **86,86% / 74,53% / 69,09% / 92,30%** (instruções/ramificações/funções/linhas); frontend em **70,48% / 71,29% / 56,86% / 76,98%**. A página `LoginPage` ficou em **100%** de instruções e linhas, com 80% dos ramos cobertos. Esses percentuais não são metas configuradas: o comando informa cobertura, mas não falha abaixo de um limiar.
 
 ### Contratos e validação de entrada — 17
 
@@ -47,10 +49,18 @@ Resultado em 2026-09-29: **73 testes aprovados** — 17 de contratos, 25 unitár
 
 As rotas e dependências de persistência são simuladas nos testes HTTP; eles não substituem testes de integração contra uma instância real do SQL Server.
 
-### Interface React — 10
+### SQL Server real e fluxo integrado
+
+- `test/integracao-sql.spec.ts` cria uma base exclusiva com nome aleatório, executa as migrations de candidatos e recrutadores, cria três candidatos, verifica normalização de e-mail, paginação e detalhe, fecha a conexão e abre outra para confirmar persistência. Ao terminar, fecha e remove somente a base temporária.
+- `test/fluxo-api-sql.mjs` verifica com a API/SQL do Compose: bloqueio anônimo da lista, cadastro público, login do recrutador inicial, presença na lista, detalhe e linha correspondente no SQL. Remove o candidato sintético em `finally`.
+- Esses testes confirmam API/SQL e persistência após reconexão. Não reiniciam o contêiner da API nem automatizam cliques no browser até o banco.
+- O serviço OCR tem quatro testes Python executados dentro da imagem OCR, incluindo o fixture PDF escaneado, PDF inválido, healthcheck e timeout do processo OCR. Eles não fazem parte de `npm test`.
+
+### Interface React — 11
 
 - Cadastro recebe campos sugeridos do PDF, mantém edição manual e exibe erros de validação.
 - Login local impede enviar e-mail malformado à API e mostra a mensagem genérica quando as credenciais são recusadas.
+- Login válido navega até a lista de candidatos.
 - Navegação pública/protegida e confirmação de cadastro anônimo.
 
 ## Critérios deliberados
@@ -62,9 +72,10 @@ As rotas e dependências de persistência são simuladas nos testes HTTP; eles n
 
 ## Lacunas conhecidas
 
-- Ainda não há teste automatizado de integração com SQL Server real, persistência após reinício, migrations completas em banco descartável ou seeder idempotente.
-- A interface de login tem testes para entrada inválida e credencial recusada; falta um teste React do caminho feliz e do redirecionamento após login.
+- A integração com SQL Server real e as migrations em uma base descartável agora têm teste dedicado. Falta automatizar persistência após reinício do contêiner da API e idempotência do seeder.
+- O login React cobre credencial válida, e-mail inválido e credencial recusada. A integração do login/rotas com API real continua coberta pelo smoke script, não por automação de browser.
 - Os percentuais mais baixos estão em funções auxiliares de auditoria/TypeORM, abstração de seleção de persistência, diagnóstico de desempenho e componentes menos exercitados de `App`. Priorizar teste de integração SQL e caminhos completos dessas áreas.
 - A limitação de tentativas é verificada por HTTP para o endpoint de login. O armazenamento do limitador é em memória por instância; ambientes com várias réplicas precisam de armazenamento compartilhado.
 - Não há teste de renderização contra payload XSS na tela de detalhe nem corpus amplo de PDFs reais. Campos são apresentados como texto React e a extração continua heurística.
+- A checagem visual sistemática nos tamanhos 320, 375, 768 px e desktop e um benchmark com volume representativo seguem pendentes.
 - Os casos de e-mail cobrem formatos comuns incorretos, não toda a gramática possível (por exemplo, domínios internacionalizados ou comentários raros).
