@@ -1,0 +1,32 @@
+{
+  "name": "cadastro-candidatos",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/api",
+    "apps/web",
+    "packages/contratos"
+  ],
+  "scripts": {
+    "dev": "npm run build --workspace @cadastro/contratos && concurrently -k -n API,WEB -c blue,green \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "npm run start:dev --workspace @cadastro/api",
+    "dev:web": "npm run dev --workspace @cadastro/web",
+    "build": "npm run build --workspace @cadastro/contratos && npm run build --workspace @cadastro/api && npm run build --workspace @cadastro/web",
+    "test": "npm run test --workspace @cadastro/contratos && npm run test --workspace @cadastro/api && npm run test:e2e --workspace @cadastro/api && npm run test --workspace @cadastro/web",
+    "test:cov": "npm run test:cov --workspace @cadastro/contratos && npm run test:cov --workspace @cadastro/api && npm run test:cov --workspace @cadastro/web",
+    "audit": "npm audit --audit-level=high",
+    "typecheck": "npm run build --workspace @cadastro/contratos && npm run typecheck --workspace @cadastro/contratos && npm run typecheck --workspace @cadastro/api && npm run typecheck --workspace @cadastro/web"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "typescript": "~5.9.3"
+  },
+  "engines": {
+    "node": ">=24.11 <25",
+    "npm": ">=11 <12"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "argon2@0.45.1": true
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@cadastro/contratos",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run src",
+    "test:cov": "vitest run --coverage src",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.0",
+    "typescript": "~5.9.3",
+    "vitest": "5.0.2"
+  }
+}
