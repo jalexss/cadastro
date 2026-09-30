@@ -1,5 +1,6 @@
 import json
 import os
+import signal
 import subprocess
 import tempfile
 import threading
@@ -12,6 +13,29 @@ MAX_TEXT_BYTES = 100_000
 MAX_PAGES = 15
 OCR_TIMEOUT_SECONDS = 40
 SLOTS = threading.BoundedSemaphore(2)
+
+
+def executar_ocr_isolado(comando, diretorio, ambiente):
+    processo = subprocess.Popen(
+        comando,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        cwd=diretorio,
+        env=ambiente,
+        start_new_session=True,
+    )
+    try:
+        processo.communicate(timeout=OCR_TIMEOUT_SECONDS)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(processo.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        processo.communicate()
+        raise
+    if processo.returncode != 0:
+        raise subprocess.CalledProcessError(processo.returncode, comando)
 
 
 class OcrHandler(BaseHTTPRequestHandler):
@@ -59,16 +83,7 @@ class OcrHandler(BaseHTTPRequestHandler):
                     "--language", "por+eng", "--sidecar", str(texto_saida),
                     str(arquivo_entrada), str(arquivo_saida)
                 ]
-                subprocess.run(
-                    comando,
-                    stdin=subprocess.DEVNULL,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    timeout=OCR_TIMEOUT_SECONDS,
-                    check=True,
-                    cwd=temporario,
-                    env={**os.environ, "TMPDIR": temporario, "HOME": temporario}
-                )
+                executar_ocr_isolado(comando, temporario, {**os.environ, "TMPDIR": temporario, "HOME": temporario})
                 texto = texto_saida.read_bytes()[:MAX_TEXT_BYTES].decode("utf-8", errors="replace") if texto_saida.exists() else ""
             self.send_json(200, {"texto": texto, "duracaoMs": round((time.monotonic() - inicio) * 1000)})
         except subprocess.TimeoutExpired:

@@ -1,12 +1,15 @@
 import json
+import signal
+import subprocess
 import threading
 import unittest
+from unittest.mock import patch
 from http.server import ThreadingHTTPServer
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
-from servidor_ocr import OcrHandler
+from servidor_ocr import OcrHandler, executar_ocr_isolado
 
 
 def pdf_escaneado():
@@ -43,6 +46,21 @@ class TesteServidorOcr(unittest.TestCase):
     def test_disponibiliza_healthcheck(self):
         with urlopen(self.url + "/health", timeout=2) as response:
             self.assertEqual(json.loads(response.read()), {"status": "ok"})
+
+    @patch("servidor_ocr.os.killpg")
+    @patch("servidor_ocr.subprocess.Popen")
+    def test_timeout_encerra_o_grupo_e_aguarda_o_processo(self, popen, killpg):
+        processo = popen.return_value
+        processo.pid = 4321
+        processo.returncode = -signal.SIGKILL
+        processo.communicate.side_effect = [subprocess.TimeoutExpired(["ocrmypdf"], 40), None]
+
+        with self.assertRaises(subprocess.TimeoutExpired):
+            executar_ocr_isolado(["ocrmypdf"], "/tmp", {})
+
+        self.assertEqual(popen.call_args.kwargs["start_new_session"], True)
+        killpg.assert_called_once_with(4321, signal.SIGKILL)
+        self.assertEqual(processo.communicate.call_count, 2)
 
 
 if __name__ == "__main__":
