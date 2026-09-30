@@ -10,11 +10,11 @@
 3. Compartilhar contratos Zod entre browser e API, mantendo regras obrigatórias e formatos consistentes nos dois caminhos.
 4. Extrair somente texto de PDF no backend, na memória, com limite de 5 MB, validação da assinatura PDF e descarte após uso. Não haverá OCR nem armazenamento do arquivo.
 5. Registrar auditoria técnica em arquivos JSONL diários UTC sem valores SQL ou conteúdo pessoal; coletar duração de HTTP e consulta lenta e fingerprints de todas as consultas.
-6. O desafio não adicionará autenticação, por não constar do requisito. O uso ficará limitado a demonstração local e essa restrição será visível na documentação.
+6. **Decisão original, posteriormente substituída:** não adicionar autenticação por não constar do requisito inicial. O novo escopo introduziu autenticação local e autorização conforme a RDA 0002.
 
 ## Consequências
 
 - Uma leitura parcial ou fracassada não impede preencher e salvar o mesmo formulário manualmente.
 - PDF escaneado e layouts fora das heurísticas podem não gerar dados; a equipe deve revisar os valores sugeridos.
-- O serviço ainda não está pronto para publicação pública: autenticação e autorização são necessárias antes disso.
+- **Consequência original, superada pela implementação da RDA 0002:** sem autenticação e autorização, o serviço não estaria pronto para publicação pública. A recomendação atual continua sendo revisar controles operacionais e de implantação antes de expor a aplicação.
 - Versões são fixadas no lockfile e verificadas com auditoria de dependências; a versão final do runtime precisa satisfazer engines dos pacotes escolhidos.

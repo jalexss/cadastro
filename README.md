@@ -96,6 +96,6 @@ OCRmyPDF declara que não foi projetado para proteger sozinho contra arquivos ma
 
 O escopo, arquitetura, guia de execução, DER e decisões estão em [`docs/`](docs/). O histórico de desenvolvimento real e uso de IA consta em [`DESENVOLVIMENTO.md`](DESENVOLVIMENTO.md).
 
-As decisões arquiteturais estão registradas em [`docs/REGISTRO-DECISOES-ARQUITETURAIS/`](docs/REGISTRO-DECISOES-ARQUITETURAIS/), incluindo a exceção do Compose para demonstração local. O repositório permanece local e não possui publicação remota configurada.
+As decisões arquiteturais estão registradas em [`docs/REGISTRO-DECISOES-ARQUITETURAIS/`](docs/REGISTRO-DECISOES-ARQUITETURAIS/), incluindo a exceção do Compose para demonstração local e as regras de higiene do Git. O projeto está versionado localmente; a publicação em um repositório pessoal do GitHub ainda está pendente de confirmação de conta e visibilidade. O `.gitignore` exclui segredos, documentos pessoais, currículos e artefatos locais, mantendo apenas o PDF sintético necessário para o teste de OCR.
 
 Execute `npm run audit` após instalar dependências e antes de entregar. Resultado observado durante esta implementação: auditoria npm sem vulnerabilidades de alta severidade; confirme novamente no ambiente de entrega porque o advisory database muda.

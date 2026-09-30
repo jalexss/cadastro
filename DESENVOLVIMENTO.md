@@ -6,7 +6,9 @@ O trabalho foi organizado como monorepo npm com frontend React, API NestJS e pac
 
 ## Controle de versão
 
-Em 2026-09-29 foi inicializado um repositório Git local na branch `main`, a pedido do usuário, pois o diretório ainda não possuía histórico Git. As mudanças existentes foram registradas em commits separados por documentação, workspace/contratos, API, OCR, autenticação, frontend e Docker. Nenhum remoto foi configurado e nenhum repositório foi publicado. O currículo pessoal usado na validação manual não foi adicionado ao Git; somente o PDF sintético de teste faz parte dos fixtures.
+Em 2026-09-29 foi inicializado um repositório Git local na branch `main`, a pedido do usuário, pois o diretório ainda não possuía histórico Git. As mudanças existentes foram registradas em commits separados por documentação, workspace/contratos, API, OCR, autenticação, frontend e Docker. A publicação em um repositório pessoal do GitHub está pendente de confirmação da conta e da visibilidade. O currículo pessoal usado na validação manual não foi adicionado ao Git; somente o PDF sintético de teste faz parte dos fixtures.
+
+O `.gitignore` mantém arquivos de teste automatizado que fazem parte da solução, mas exclui resultados gerados, bancos locais, credenciais e documentos pessoais. O fixture PDF de OCR é explicitamente permitido porque é sintético e necessário para reproduzir o teste de leitura.
 
 ## Decisões técnicas
 
