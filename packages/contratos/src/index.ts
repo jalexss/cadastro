@@ -1,8 +1,10 @@
 import { z } from 'zod';
 
+const emailSchema = z.string().trim().pipe(z.email({ error: 'Informe um e-mail válido.' }).max(254));
+
 export const candidatoSchema = z.object({
   nomeCompleto: z.string().trim().min(1, 'Informe o nome completo.').max(160),
-  email: z.email({ error: 'Informe um e-mail válido.' }).trim().max(254),
+  email: emailSchema,
   telefone: z.string().trim().max(40).optional().or(z.literal('')),
   areaInteresse: z.string().trim().max(140).optional().or(z.literal('')),
   resumoProfissional: z.string().trim().max(3000).optional().or(z.literal(''))
@@ -10,7 +12,7 @@ export const candidatoSchema = z.object({
 
 export const camposExtraidosSchema = z.object({
   nomeCompleto: z.string().max(160).optional(),
-  email: z.email({ error: 'Informe um e-mail válido.' }).max(254).optional(),
+  email: emailSchema.optional(),
   telefone: z.string().max(40).optional(),
   areaInteresse: z.string().max(140).optional(),
   resumoProfissional: z.string().max(3000).optional()
@@ -22,8 +24,8 @@ export const paginaSchema = z.object({
 });
 
 export const loginSchema = z.object({
-  email: z.email({ error: 'Informe um e-mail válido.' }).trim().max(254),
-  senha: z.string().min(1, 'Informe a senha.').max(128)
+  email: emailSchema,
+  senha: z.string().min(1, 'Informe a senha.').max(128).refine((senha) => senha.trim().length > 0, 'Informe uma senha que não seja composta apenas por espaços.')
 }).strict();
 
 export type CandidatoInput = z.infer<typeof candidatoSchema>;

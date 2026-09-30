@@ -45,7 +45,7 @@ npm ci
 npm run dev
 ```
 
-Comandos: `npm test`, `npm run typecheck`, `npm run build`, `npm run audit`, `npm run test:cov`.
+Comandos: `npm test`, `npm run typecheck`, `npm run build`, `npm run audit`, `npm run test:cov`. A cobertura e as limitações dos testes estão detalhadas em [`ESTRATEGIA-DE-TESTES.md`](ESTRATEGIA-DE-TESTES.md).
 
 ## Migrations e seeder
 

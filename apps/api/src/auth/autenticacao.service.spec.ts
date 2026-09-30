@@ -13,6 +13,7 @@ describe('AutenticacaoService', () => {
     await service.onModuleInit();
 
     const sessao = await service.autenticar('EQUIPE@example.test', 'SenhaForteDeTeste!2026');
+    expect(persistencia.buscarRecrutadorPorEmail).toHaveBeenCalledWith('equipe@example.test');
     const { payload } = await jwtVerify(sessao.token, new TextEncoder().encode(process.env.JWT_SECRET));
     expect(payload.sub).toBe('id-recrutador');
     expect(sessao).not.toHaveProperty('senhaHash');
@@ -26,9 +27,44 @@ describe('AutenticacaoService', () => {
     vi.stubEnv('JWT_SECRET', 'segredo-de-teste-com-mais-de-trinta-e-dois-bytes');
     const senhaHash = await hash('SenhaForteDeTeste!2026', { type: argon2id, memoryCost: 19_456, timeCost: 2, parallelism: 1 });
     const persistencia = { buscarRecrutadorPorEmail: vi.fn(async () => ({ id: 'id-recrutador', email: 'equipe@example.test', senhaHash })) };
-    const service = new AutenticacaoService(persistencia as never, { registrar: vi.fn() } as never);
+    const auditoria = { registrar: vi.fn() };
+    const service = new AutenticacaoService(persistencia as never, auditoria as never);
     await service.onModuleInit();
     await expect(service.autenticar('equipe@example.test', 'senha-errada')).rejects.toThrow('E-mail ou senha inválidos.');
+    expect(auditoria.registrar).toHaveBeenCalledWith('auth.login', { resultado: 'negado' });
     vi.unstubAllEnvs();
+  });
+
+  it('usa o mesmo erro genérico para conta inexistente e audita sem e-mail', async () => {
+    vi.stubEnv('JWT_SECRET', 'segredo-de-teste-com-mais-de-trinta-e-dois-bytes');
+    const persistencia = { buscarRecrutadorPorEmail: vi.fn(async () => null) };
+    const auditoria = { registrar: vi.fn() };
+    const service = new AutenticacaoService(persistencia as never, auditoria as never);
+    await service.onModuleInit();
+
+    await expect(service.autenticar('nao-existe@example.test', 'SenhaForteDeTeste!2026')).rejects.toThrow('E-mail ou senha inválidos.');
+    expect(persistencia.buscarRecrutadorPorEmail).toHaveBeenCalledWith('nao-existe@example.test');
+    expect(auditoria.registrar).toHaveBeenCalledWith('auth.login', { resultado: 'negado' });
+    expect(JSON.stringify(auditoria.registrar.mock.calls)).not.toContain('nao-existe@example.test');
+    vi.unstubAllEnvs();
+  });
+
+  it('nega hash de senha corrompido sem expor detalhe interno', async () => {
+    vi.stubEnv('JWT_SECRET', 'segredo-de-teste-com-mais-de-trinta-e-dois-bytes');
+    const persistencia = { buscarRecrutadorPorEmail: vi.fn(async () => ({ id: 'id-recrutador', email: 'equipe@example.test', senhaHash: 'hash-invalido' })) };
+    const auditoria = { registrar: vi.fn() };
+    const service = new AutenticacaoService(persistencia as never, auditoria as never);
+    await service.onModuleInit();
+
+    await expect(service.autenticar('equipe@example.test', 'SenhaForteDeTeste!2026')).rejects.toThrow('E-mail ou senha inválidos.');
+    expect(auditoria.registrar).toHaveBeenCalledWith('auth.login', { resultado: 'negado' });
+    vi.unstubAllEnvs();
+  });
+
+  it('registra encerramento sem incluir dados pessoais', () => {
+    const auditoria = { registrar: vi.fn() };
+    const service = new AutenticacaoService({} as never, auditoria as never);
+    service.encerrar();
+    expect(auditoria.registrar).toHaveBeenCalledWith('auth.logout');
   });
 });

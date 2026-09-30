@@ -56,4 +56,16 @@ describe('API de autenticação (e2e)', () => {
   it('valida os dados obrigatórios do login', async () => {
     await request(app.getHttpServer()).post('/api/auth/login').send({ email: 'inválido', senha: '' }).expect(400);
   });
+
+  it.each([
+    { email: 'equipe@', senha: 'senha de teste' },
+    { email: 'equipe@@example.test', senha: 'senha de teste' },
+    { email: 'equipe@example.test', senha: '' },
+    { email: 'equipe@example.test', senha: 'x'.repeat(129) },
+    { email: 'equipe@example.test', senha: 'senha de teste', papel: 'admin' }
+  ])('rejeita credenciais com formato ou tamanho inválido antes da autenticação', async (dados) => {
+    autenticacao.autenticar.mockClear();
+    await request(app.getHttpServer()).post('/api/auth/login').send(dados).expect(400);
+    expect(autenticacao.autenticar).not.toHaveBeenCalled();
+  });
 });

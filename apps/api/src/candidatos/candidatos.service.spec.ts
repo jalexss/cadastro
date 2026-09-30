@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { NotFoundException } from '@nestjs/common';
 import { CandidatosService } from './candidatos.service';
 
 describe('CandidatosService', () => {
@@ -19,5 +20,19 @@ describe('CandidatosService', () => {
     const result = await service.listar(1, 20);
     expect(result.total).toBe(1);
     expect(listarCandidatos).toHaveBeenCalledWith(1, 20);
+  });
+
+  it('busca os detalhes pelo identificador solicitado', async () => {
+    const candidato = { id: 'candidato-1', nomeCompleto: 'Ana Silva', email: 'ana@example.com' };
+    const buscarCandidatoPorId = vi.fn(async () => candidato);
+    const service = new CandidatosService({ buscarCandidatoPorId } as never);
+
+    await expect(service.buscarPorId('candidato-1')).resolves.toBe(candidato);
+    expect(buscarCandidatoPorId).toHaveBeenCalledWith('candidato-1');
+  });
+
+  it('converte candidato ausente em NotFound', async () => {
+    const service = new CandidatosService({ buscarCandidatoPorId: vi.fn(async () => null) } as never);
+    await expect(service.buscarPorId('inexistente')).rejects.toBeInstanceOf(NotFoundException);
   });
 });

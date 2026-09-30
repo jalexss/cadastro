@@ -23,6 +23,7 @@ Entregar uma aplicação demonstrativa para recrutamento cadastrar candidatos se
 - Interface funcional e responsiva; diagnóstico local de tempos de requisição, Web Vitals e React Profiler sem telemetria externa.
 - Consultas paginadas, seleção explícita de colunas e sem padrão N+1.
 - Dependências fixadas e verificadas por `npm audit`.
+- Testes unitários e HTTP devem cobrir campos obrigatórios/opcionais, limites de tamanho, e-mails malformados, login válido/inválido, tentativas excessivas, autorização e falhas recuperáveis no processamento de PDFs.
 
 ## Limitações e segurança
 

@@ -60,7 +60,7 @@ npm ci
 npm run dev
 ```
 
-Comandos disponíveis: `npm test`, `npm run typecheck`, `npm run build`, `npm run audit` e `npm run test:cov`.
+Comandos disponíveis: `npm test`, `npm run typecheck`, `npm run build`, `npm run audit` e `npm run test:cov`. A cobertura por camada, os casos limite já testados e as lacunas conhecidas estão em [`docs/ESTRATEGIA-DE-TESTES.md`](docs/ESTRATEGIA-DE-TESTES.md).
 
 ## Acesso e API
 

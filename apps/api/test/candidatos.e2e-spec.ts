@@ -51,6 +51,10 @@ describe('API de candidatos (e2e)', () => {
     expect(response.body.message).toBe('Revise os campos informados.');
   });
 
+  it.each(['ana@', 'ana@@example.com', 'ana..silva@example.com', 'ana @example.com', 'ana@example.com<script>'])('rejeita e-mail fora do formato esperado: %s', async (email) => {
+    await request(app.getHttpServer()).post('/api/candidatos').send({ nomeCompleto: 'Ana Silva', email }).expect(400);
+  });
+
   it('bloqueia a lista sem sessão e lista com parâmetros validados após login', async () => {
     await request(app.getHttpServer()).get('/api/candidatos?pagina=2&limite=10').expect(401);
     const response = await request(app.getHttpServer()).get('/api/candidatos?pagina=2&limite=10').set('Cookie', 'sessao=autenticada').expect(200);

@@ -27,6 +27,7 @@ Foi utilizado **OpenAI Codex, modelo GPT-6**, como apoio de planejamento, implem
 - “Adicione OCR local gratuito para currículos escaneados, com limites e sem incluir dados pessoais nos logs.” A abordagem PDF.js + OCRmyPDF/Tesseract foi revisada com documentação oficial; OCR em nuvem foi descartado. Foram adicionados limites de tamanho/páginas/tempo/concorrência, temporários e container interno restrito.
 - “Atualize README, DESENVOLVIMENTO e documentos de arquitetura em português.” O texto foi reescrito para refletir a implementação e explicitar riscos, limitações e instruções de execução.
 - “No meu currículo não estão funcionando cargo e resumo; atualize a documentação e implemente a extração.” A regra foi estendida para título próximo ao nome ou cargo rotulado e para um resumo limitado pelos cabeçalhos das seções. Foram criados testes com conteúdo sintético e a API foi validada localmente com o documento do usuário, sem imprimir nem armazenar o texto extraído.
+- “Revise as provas unitárias e confirme casos extremos de campos, e-mails e login.” A revisão encontrou cobertura insuficiente de formatos inválidos e ausência de testes React da página de login. Foram acrescentados casos de limites, campos estritos, credencial inexistente, bloqueio por tentativas e respostas da interface; os testes também revelaram e ajudaram a corrigir a ordem de trim/validação do e-mail.
 
 As respostas foram tratadas como sugestões. Dependências, código e documentação foram inspecionados; testes e auditoria são usados para confirmar o comportamento. Durante a primeira inicialização real da API, foi corrigido o registro de `OcrCurriculoClient` como provider de `CandidatosModule`, falha que não aparecia na compilação TypeScript. A decisão anterior de não ter autenticação/OCR foi substituída pela RDA 0002 após o novo escopo.
 
@@ -36,13 +37,14 @@ As verificações incluem testes unitários e HTTP, typecheck, build, auditoria 
 
 ### Resultado observado
 
-- Testes de contratos: **3 aprovados**.
-- Testes unitários da API: **20 aprovados nesta etapa**, cobrindo regras, sessão, OCR e auditoria sem PII; inclui regressões para datas confundidas com telefone, formatos brasileiros válidos, título profissional e resumo delimitado por seção.
-- Testes HTTP/e2e da API: **10 aprovados**, incluindo login, rotas protegidas, cadastro público, PDF inválido e upload acima de 5 MB.
-- Testes de interface: **8 aprovados**, incluindo cadastro anônimo, correção de sugestões e marcador obrigatório junto ao label.
+- Testes de contratos: **17 aprovados**, incluindo limites, pontuação Unicode, e-mails malformados e formatos de login.
+- Testes unitários da API: **25 aprovados**, cobrindo regras, sessão, OCR e auditoria sem PII; inclui conta inexistente, senha incorreta/hash corrompido com resposta genérica e candidato inexistente.
+- Testes HTTP/e2e da API: **21 aprovados**, incluindo validação do login, cookie e logout, cinco tentativas antes do bloqueio, rotas protegidas, cadastro público e PDF inválido/grande.
+- Testes de interface: **10 aprovados**, incluindo cadastro anônimo, campos sugeridos do PDF e login com e-mail inválido ou credenciais recusadas.
+- Total da suíte `npm test`: **73 aprovados**. `npm run test:cov` reportou contratos 100% em todas as métricas; API 86,86% instruções, 74,53% ramos, 69,09% funções e 92,30% linhas; frontend 69,27%, 70,37%, 56,86% e 76,19%, respectivamente. A estratégia, os casos específicos e as lacunas conhecidas estão em [`docs/ESTRATEGIA-DE-TESTES.md`](docs/ESTRATEGIA-DE-TESTES.md).
 - `npm run typecheck`: **concluído** nos três workspaces.
 - `npm run build`: **concluído** nos três workspaces; imagens Docker de API, web e OCR também foram construídas.
-- `npm run audit`: **0 vulnerabilidades**.
+- `npm run audit`: **0 vulnerabilidades na auditoria anterior**; não foi repetida nesta revisão porque não houve alterações nas dependências ou no lockfile.
 - Serviço OCR no contêiner oficial `v17.12.1`: **4 testes aprovados**, incluindo extração de nome/e-mail de PDF escaneado sintético, PDF inválido, healthcheck e encerramento do grupo de processos no timeout.
 - Compose de demonstração com override local: **iniciado** com web, API, SQL Server e OCR saudáveis. `GET /api/health` e a rota web `/candidatos/novo` responderam com HTTP 200; a tela foi conferida visualmente no navegador. O override remove `no-new-privileges` somente da API e OCR; mantém as demais restrições e não deve ser usado em produção. O arquivo base conserva essa proteção.
 - Validação manual com um currículo real fornecido pelo usuário, processado somente no endpoint local: foram sugeridos nome, cargo e resumo (477 caracteres); e-mail e telefone permaneceram vazios porque não foram encontrados no documento. O teste imprimiu somente as chaves identificadas, a presença dos campos e o tamanho do resumo. O PDF e o conteúdo pessoal não foram copiados para o projeto, fixtures ou logs.

@@ -25,6 +25,7 @@ describe('SessaoGuard', () => {
     const expired = await new SignJWT({ email: 'equipe@example.test' }).setProtectedHeader({ alg: 'HS256' }).setSubject('r1').setExpirationTime(1).sign(secret);
     const guard = new SessaoGuard({ registrar: vi.fn() } as never);
     await expect(guard.canActivate(contexto() as never)).rejects.toThrow('Faça login');
+    await expect(guard.canActivate(contexto('sessao=token-malformado') as never)).rejects.toThrow('Faça login');
     await expect(guard.canActivate(contexto(`sessao=${expired}`) as never)).rejects.toThrow('Faça login');
     vi.unstubAllEnvs();
   });
