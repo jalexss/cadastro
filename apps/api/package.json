@@ -11,6 +11,7 @@
     "test:e2e": "vitest run --config vitest.e2e.config.mts",
     "test:sql": "vitest run --config vitest.sql.config.mts",
     "test:integration": "node test/fluxo-api-sql.mjs",
+    "test:e2e:navegador": "playwright test --config test/playwright.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.build.json",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/database/data-source.ts",
     "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/database/data-source.ts"

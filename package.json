@@ -13,11 +13,13 @@
     "dev:web": "npm run dev --workspace @cadastro/web",
     "build": "npm run build --workspace @cadastro/contratos && npm run build --workspace @cadastro/api && npm run build --workspace @cadastro/web",
     "test": "npm run test --workspace @cadastro/contratos && npm run test --workspace @cadastro/api && npm run test:e2e --workspace @cadastro/api && npm run test --workspace @cadastro/web",
+    "test:e2e:browser": "npm run test:e2e:navegador --workspace @cadastro/api",
     "test:cov": "npm run test:cov --workspace @cadastro/contratos && npm run test:cov --workspace @cadastro/api && npm run test:cov --workspace @cadastro/web",
     "audit": "npm audit --audit-level=high",
     "typecheck": "npm run build --workspace @cadastro/contratos && npm run typecheck --workspace @cadastro/contratos && npm run typecheck --workspace @cadastro/api && npm run typecheck --workspace @cadastro/web"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "concurrently": "^9.2.1",
     "typescript": "~5.9.3"
   },

@@ -19,6 +19,7 @@ Aplicação demonstrativa para cadastro público de candidatos por formulário o
 | Senhas | Argon2id | argon2 0.45.1 |
 | Sessões | JWT em cookie HttpOnly | jose 6.2.12 |
 | Contratos | Zod | 4.6.5 |
+| Teste integral de navegador | Playwright Test | 1.63.0 |
 | Linguagem | TypeScript | 5.9.3 |
 
 As versões npm estão fixadas no `package-lock.json`. O runtime é Node 24 LTS. OCRmyPDF e Tesseract executam localmente em um contêiner isolado; currículos não são enviados a terceiros.
@@ -60,7 +61,7 @@ npm ci
 npm run dev
 ```
 
-Comandos disponíveis: `npm test`, `npm run typecheck`, `npm run build`, `npm run audit` e `npm run test:cov`. A cobertura por camada, os casos limite já testados e as lacunas conhecidas estão em [`docs/ESTRATEGIA-DE-TESTES.md`](docs/ESTRATEGIA-DE-TESTES.md). Com Compose iniciado e `.env` preenchido, execute também `npm run test:sql --workspace @cadastro/api` para testar migrations e persistência numa base descartável e `npm run test:integration --workspace @cadastro/api` para verificar cadastro, login, lista e detalhe pela API real com SQL Server. Os comandos de integração criam e limpam os dados temporários; use Node.js 24.
+Comandos disponíveis: `npm test`, `npm run typecheck`, `npm run build`, `npm run audit` e `npm run test:cov`. A cobertura por camada, os casos limite já testados e as lacunas conhecidas estão em [`docs/ESTRATEGIA-DE-TESTES.md`](docs/ESTRATEGIA-DE-TESTES.md). Com Compose iniciado e `.env` preenchido, execute também `npm run test:sql --workspace @cadastro/api` para testar migrations e persistência numa base descartável e `npm run test:integration --workspace @cadastro/api` para verificar API e SQL Server. Para a prova integral com navegador, instale o Chromium uma vez com `npx playwright install chromium` e execute `npm run test:e2e:browser`; ela cadastra um candidato no site, cria uma conta recrutadora sintética temporária no SQL, faz login, abre lista e detalhe e confere diretamente a linha persistida. Ao final, remove somente esses dois registros identificados por e-mails aleatórios. Os testes integrados precisam do Compose ativo e `STORAGE_MODE=sqlserver`; não fazem parte de `npm test`.
 
 ## Acesso e API
 
