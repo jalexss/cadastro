@@ -15,7 +15,7 @@
 
 - O armazenamento em memória serve para demonstração e testes e perde dados no reinício; SQL Server é necessário para retenção.
 - A leitura continua heurística e pode errar ou não reconhecer PDFs com baixa qualidade, proteção, layout atípico ou escrita manual.
-- Uma validação manual detectou omissão de e-mail e falso positivo de telefone a partir de número com aparência de ano; os campos sugeridos precisam de revisão.
+- Em uma validação manual, o PDF não continha e-mail nem telefone no contato, então esses campos ficaram vazios como esperado; uma sequência numérica isolada foi sugerida incorretamente como telefone. Campos sugeridos precisam de revisão. Cargo e resumo continuam manuais.
 - OCRmyPDF não substitui isolamento de arquivos hostis. O container sem porta pública, com filesystem somente leitura, tmpfs e limites é parte obrigatória da arquitetura.
 - Não há gestão completa de contas, papéis, recuperação de senha ou MFA. O uso segue local/controlado até uma revisão de implantação.
 
