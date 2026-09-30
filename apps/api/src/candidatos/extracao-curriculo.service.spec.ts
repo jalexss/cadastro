@@ -17,6 +17,21 @@ describe('Extração de currículo', () => {
     expect(identificarCampos('Ana Silva\nana@example.com')).toEqual({ nomeCompleto: 'Ana Silva', email: 'ana@example.com' });
   });
 
+  it('ignora sequências de oito dígitos que parecem intervalos de anos', () => {
+    expect(identificarCampos('Ana Silva\nFormação\n2023–2024')).toEqual({ nomeCompleto: 'Ana Silva' });
+    expect(identificarCampos('Ana Silva\n20232024')).toEqual({ nomeCompleto: 'Ana Silva' });
+  });
+
+  it('reconhece telefone brasileiro com DDD e número local válido', () => {
+    expect(identificarCampos('Ana Silva\nTelefone: (11) 99999-9999')).toMatchObject({ telefone: '(11) 99999-9999' });
+    expect(identificarCampos('Ana Silva\n+55 11 99999-9999')).toMatchObject({ telefone: '+55 11 99999-9999' });
+  });
+
+  it('aceita número local curto somente quando há rótulo de telefone', () => {
+    expect(identificarCampos('Ana Silva\nTelefone: 12345678')).toMatchObject({ telefone: '12345678' });
+    expect(identificarCampos('Ana Silva\n12345678')).not.toHaveProperty('telefone');
+  });
+
   it('usa OCR local como fallback para PDF sem camada de texto', async () => {
     const documento = { numPages: 1, getPage: vi.fn(async () => ({ getTextContent: vi.fn(async () => ({ items: [] })) })) };
     pdfjs.getDocument.mockReturnValue({ promise: Promise.resolve(documento), destroy: vi.fn(async () => undefined) });
