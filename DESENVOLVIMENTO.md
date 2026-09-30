@@ -4,6 +4,10 @@
 
 O trabalho foi organizado como monorepo npm com frontend React, API NestJS e pacote de contratos Zod. O fluxo atual usa Docker Compose para web, API, SQL Server e OCR local. A implementação foi feita em etapas: escopo/documentação, persistência e cadastro, autenticação e autorização, processamento de PDF/OCR, interface responsiva e verificação. O passo a passo está em [`docs/GUIA-DE-EXECUCAO.md`](docs/GUIA-DE-EXECUCAO.md).
 
+## Controle de versão
+
+Em 2026-09-29 foi inicializado um repositório Git local na branch `main`, a pedido do usuário, pois o diretório ainda não possuía histórico Git. As mudanças existentes foram registradas em commits separados por documentação, workspace/contratos, API, OCR, autenticação, frontend e Docker. Nenhum remoto foi configurado e nenhum repositório foi publicado. O currículo pessoal usado na validação manual não foi adicionado ao Git; somente o PDF sintético de teste faz parte dos fixtures.
+
 ## Decisões técnicas
 
 - React, TypeScript e Vite entregam uma interface pequena e responsiva; NestJS organiza API, regras e integrações.
