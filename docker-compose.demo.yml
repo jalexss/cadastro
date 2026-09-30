@@ -1,0 +1,9 @@
+# Somente para execução local no runtime Docker deste ambiente.
+# Requer Docker Compose v2.24.4+ para o modificador !reset.
+# Para deploy, use apenas docker-compose.yml, que mantém no-new-privileges.
+services:
+  api:
+    security_opt: !reset []
+
+  ocr:
+    security_opt: !reset []

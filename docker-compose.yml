@@ -1,0 +1,103 @@
+services:
+  banco:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${SQL_SA_PASSWORD:?Defina SQL_SA_PASSWORD no arquivo .env}
+    ports:
+      - "${SQL_PORT:-1433}:1433"
+    volumes:
+      - dados_sql:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -C -Q \"SELECT 1\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_HOST: banco
+      DATABASE_PORT: 1433
+      DATABASE_NAME: ${SQL_DATABASE:-CadastroCandidatos}
+      DATABASE_USER: sa
+      DATABASE_PASSWORD: ${SQL_SA_PASSWORD:?Defina SQL_SA_PASSWORD no arquivo .env}
+      CORS_ORIGIN: http://localhost:${WEB_PORT:-5173}
+      STORAGE_MODE: ${STORAGE_MODE:-sqlserver}
+      AUTH_BOOTSTRAP_EMAIL: ${AUTH_BOOTSTRAP_EMAIL:?Defina AUTH_BOOTSTRAP_EMAIL no arquivo .env}
+      AUTH_BOOTSTRAP_PASSWORD: ${AUTH_BOOTSTRAP_PASSWORD:?Defina AUTH_BOOTSTRAP_PASSWORD no arquivo .env}
+      JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET no arquivo .env}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-false}
+      OCR_TEXTO_URL: http://ocr:8081/extrair
+      LOG_DIRECTORY: /app/logs
+      LOG_RETENTION_DAYS: ${LOG_RETENTION_DAYS:-30}
+    ports:
+      - "${API_PORT:-3000}:3000"
+    volumes:
+      - logs_api:/app/logs
+    networks:
+      - default
+      - ocr-interno
+    depends_on:
+      banco:
+        condition: service_healthy
+      ocr:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 768m
+    cpus: 1.5
+    pids_limit: 128
+    restart: unless-stopped
+
+  ocr:
+    build:
+      context: .
+      dockerfile: apps/ocr/Dockerfile
+    expose:
+      - "8081"
+    networks:
+      - ocr-interno
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=256m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 768m
+    cpus: 1.0
+    pids_limit: 64
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8081/health', timeout=2)"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "${WEB_PORT:-5173}:8080"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  dados_sql:
+  logs_api:
+
+networks:
+  ocr-interno:
+    internal: true
