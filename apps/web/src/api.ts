@@ -40,8 +40,22 @@ export const api = {
   detalhar(id: string) {
     return request<CandidatoResumo>(`/candidatos/${encodeURIComponent(id)}`);
   },
-  criar(candidato: CandidatoInput) {
+  criar(candidato: CandidatoInput, curriculo?: File | null) {
+    if (curriculo) {
+      const form = new FormData();
+      form.append('dados', JSON.stringify(candidato));
+      form.append('curriculo', curriculo);
+      return request<CandidatoCriado>('/candidatos', { method: 'POST', body: form });
+    }
     return request<CandidatoCriado>('/candidatos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(candidato) });
+  },
+  urlCurriculo(id: string) {
+    return `${API_URL}/candidatos/${encodeURIComponent(id)}/curriculo`;
+  },
+  anexarCurriculo(id: string, arquivo: File) {
+    const form = new FormData();
+    form.append('curriculo', arquivo);
+    return request<{ temCurriculo: boolean }>(`/candidatos/${encodeURIComponent(id)}/curriculo`, { method: 'PUT', body: form });
   },
   extrair(arquivo: File) {
     const form = new FormData();

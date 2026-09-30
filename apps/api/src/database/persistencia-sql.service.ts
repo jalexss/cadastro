@@ -14,21 +14,23 @@ export class PersistenciaSqlService implements Persistencia {
     @InjectRepository(RecrutadorEntity) private readonly recrutadores: Repository<RecrutadorEntity>
   ) {}
 
-  async criarCandidato(input: CandidatoInput): Promise<CandidatoRegistro> {
+  async criarCandidato(input: CandidatoInput, curriculoPdf?: Buffer): Promise<CandidatoRegistro> {
     const result = await this.candidatos.save(this.candidatos.create({
       id: randomUUID(),
       nomeCompleto: input.nomeCompleto,
       email: input.email.trim().toLowerCase(),
       telefone: input.telefone || null,
       areaInteresse: input.areaInteresse || null,
-      resumoProfissional: input.resumoProfissional || null
+      resumoProfissional: input.resumoProfissional || null,
+      temCurriculo: Boolean(curriculoPdf),
+      curriculoPdf: curriculoPdf ?? null
     }));
     return result as CandidatoRegistro;
   }
 
   async listarCandidatos(pagina: number, limite: number): Promise<ListaCandidatos> {
     const [itens, total] = await this.candidatos.createQueryBuilder('candidato')
-      .select(['candidato.id', 'candidato.nomeCompleto', 'candidato.email', 'candidato.areaInteresse', 'candidato.criadoEm'])
+      .select(['candidato.id', 'candidato.nomeCompleto', 'candidato.email', 'candidato.areaInteresse', 'candidato.criadoEm', 'candidato.temCurriculo'])
       .orderBy('candidato.criadoEm', 'DESC')
       .addOrderBy('candidato.id', 'DESC')
       .skip((pagina - 1) * limite)
@@ -37,7 +39,7 @@ export class PersistenciaSqlService implements Persistencia {
     return {
       itens: itens.map((item) => ({
         id: item.id.toLowerCase(), nomeCompleto: item.nomeCompleto, email: item.email,
-        areaInteresse: item.areaInteresse ?? '', criadoEm: item.criadoEm.toISOString()
+        areaInteresse: item.areaInteresse ?? '', criadoEm: item.criadoEm.toISOString(), temCurriculo: item.temCurriculo
       })),
       pagina, limite, total
     };
@@ -46,6 +48,26 @@ export class PersistenciaSqlService implements Persistencia {
   async buscarCandidatoPorId(id: string): Promise<CandidatoRegistro | null> {
     const candidato = await this.candidatos.findOneBy({ id });
     return candidato ? candidato as CandidatoRegistro : null;
+  }
+
+  async buscarCurriculoPdf(id: string): Promise<Buffer | null> {
+    const candidato = await this.candidatos.createQueryBuilder('candidato')
+      .addSelect('candidato.curriculoPdf')
+      .where('candidato.id = :id', { id })
+      .andWhere('candidato.temCurriculo = :temCurriculo', { temCurriculo: true })
+      .getOne();
+    return candidato?.curriculoPdf ?? null;
+  }
+
+  async anexarCurriculoPdf(id: string, curriculoPdf: Buffer): Promise<boolean> {
+    const candidato = await this.candidatos.findOneBy({ id });
+    if (!candidato || candidato.temCurriculo) return false;
+    const atualizacao = await this.candidatos.update({ id, temCurriculo: false }, {
+      temCurriculo: true,
+      curriculoPdf,
+      atualizadoEm: new Date()
+    });
+    return (atualizacao.affected ?? 0) > 0;
   }
 
   async existeCandidatoComEmail(email: string): Promise<boolean> {

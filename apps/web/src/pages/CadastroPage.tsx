@@ -12,6 +12,7 @@ export function CadastroPage() {
   const [aviso, setAviso] = useState('');
   const [erroArquivo, setErroArquivo] = useState('');
   const [arquivoNome, setArquivoNome] = useState('');
+  const [arquivoCurriculo, setArquivoCurriculo] = useState<File | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [concluido, setConcluido] = useState(false);
@@ -27,7 +28,7 @@ export function CadastroPage() {
   async function processarArquivo(event: ChangeEvent<HTMLInputElement>) {
     const arquivo = event.target.files?.[0];
     if (!arquivo) return;
-    setErroArquivo(''); setAviso(''); setArquivoNome(arquivo.name);
+    setErroArquivo(''); setAviso(''); setArquivoNome(arquivo.name); setArquivoCurriculo(null);
     if (arquivo.size > 5 * 1024 * 1024 || !arquivo.name.toLowerCase().endsWith('.pdf') || (arquivo.type && arquivo.type !== 'application/pdf')) {
       setErroArquivo('Escolha um arquivo PDF válido de até 5 MB. Você ainda pode preencher o cadastro manualmente.');
       event.target.value = '';
@@ -36,6 +37,7 @@ export function CadastroPage() {
     setEnviando(true);
     try {
       const { campos } = await api.extrair(arquivo);
+      setArquivoCurriculo(arquivo);
       setForm((atual) => ({ ...atual, ...campos }));
       setAviso(Object.keys(campos).length ? 'Currículo lido. Confira e complete os dados antes de salvar.' : 'O currículo foi lido, mas não encontramos dados para preencher. Complete o formulário manualmente.');
     } catch (error) {
@@ -55,9 +57,11 @@ export function CadastroPage() {
     }
     setSalvando(true);
     try {
-      const salvo = await api.criar(resultado.data);
+      const salvo = arquivoCurriculo
+        ? await api.criar(resultado.data, arquivoCurriculo)
+        : await api.criar(resultado.data);
       if (recrutador) navigate(`/candidatos/${salvo.id}`, { state: { salvo: true } });
-      else { setForm(initialValues); setArquivoNome(''); setConcluido(true); }
+      else { setForm(initialValues); setArquivoNome(''); setArquivoCurriculo(null); setConcluido(true); }
     }
     catch (error) { setAviso(''); setErroArquivo((error as Error).message); }
     finally { setSalvando(false); }
@@ -88,14 +92,14 @@ export function CadastroPage() {
           </form>
         </div>
         <aside className="form-aside">
-          <div className="panel upload-panel"><div className="upload-icon">↑</div><div className="upload-title">Comece pelo currículo</div><p>Enviaremos o PDF para sugerir alguns dados. Você poderá revisar e editar tudo antes de salvar.</p>
+          <div className="panel upload-panel"><div className="upload-icon">↑</div><div className="upload-title">Comece pelo currículo</div><p>Enviaremos o PDF para sugerir dados. Você poderá revisar e editar tudo; após salvar, a equipe poderá consultar o arquivo.</p>
             <input ref={inputRef} className="sr-only" type="file" accept="application/pdf,.pdf" onChange={processarArquivo} aria-label="Selecionar currículo em PDF" />
             <button type="button" className="button button-secondary upload-button" onClick={() => inputRef.current?.click()} disabled={enviando}>{enviando ? <><span className="spinner" /> Lendo currículo…</> : arquivoNome ? 'Escolher outro PDF' : 'Selecionar currículo PDF'}</button>
             {arquivoNome && <div className="file-name">▧ {arquivoNome}</div>}
             {aviso && <div className="alert alert-success" role="status">{aviso}</div>}
             <span className="upload-footnote">PDF até 5 MB · Opcional</span>
           </div>
-          <div className="privacy-note"><span aria-hidden="true">⌑</span><div><strong>Seus dados estão protegidos</strong><p>O currículo é usado apenas para sugerir os dados e não é armazenado.</p></div></div>
+          <div className="privacy-note"><span aria-hidden="true">⌑</span><div><strong>Seus dados estão protegidos</strong><p>O PDF anexado fica disponível somente para a equipe autenticada consultar o perfil.</p></div></div>
         </aside>
       </div>}
     </section>

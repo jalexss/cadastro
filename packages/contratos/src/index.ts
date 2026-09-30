@@ -46,10 +46,11 @@ export interface CandidatoResumo extends CandidatoInput {
   id: string;
   criadoEm: string;
   atualizadoEm: string;
+  temCurriculo: boolean;
 }
 
 export interface ListaCandidatos {
-  itens: Array<Pick<CandidatoResumo, 'id' | 'nomeCompleto' | 'email' | 'areaInteresse' | 'criadoEm'>>;
+  itens: Array<Pick<CandidatoResumo, 'id' | 'nomeCompleto' | 'email' | 'areaInteresse' | 'criadoEm' | 'temCurriculo'>>;
   pagina: number;
   limite: number;
   total: number;

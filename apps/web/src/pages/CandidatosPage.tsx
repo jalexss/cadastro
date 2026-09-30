@@ -42,7 +42,10 @@ export function CandidatosPage() {
                 <td><Link className="candidate-name" to={`/candidatos/${candidato.id}`}><span className="candidate-avatar">{candidato.nomeCompleto.slice(0, 1).toUpperCase()}</span>{candidato.nomeCompleto}</Link></td>
                 <td className="muted">{candidato.email}</td><td>{candidato.areaInteresse || <span className="muted">Não informado</span>}</td>
                 <td className="muted">{new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium' }).format(new Date(candidato.criadoEm))}</td>
-                <td><Link className="row-action" aria-label={`Ver ${candidato.nomeCompleto}`} to={`/candidatos/${candidato.id}`}>→</Link></td>
+                <td><div className="table-actions">
+                  {candidato.temCurriculo && <a className="row-action row-action-pdf" aria-label={`Visualizar currículo PDF de ${candidato.nomeCompleto}`} title="Visualizar currículo PDF" href={api.urlCurriculo(candidato.id)} target="_blank" rel="noreferrer">PDF</a>}
+                  <Link className="row-action" aria-label={`Ver ${candidato.nomeCompleto}`} to={`/candidatos/${candidato.id}`}>→</Link>
+                </div></td>
               </tr>)}
             </tbody>
           </table>

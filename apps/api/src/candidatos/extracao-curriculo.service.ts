@@ -88,6 +88,32 @@ export function identificarCampos(texto: string): CamposExtraidos {
 export class ExtracaoCurriculoService {
   constructor(private readonly ocr: OcrCurriculoClient, private readonly auditoria: AuditoriaService) {}
 
+  async validarParaVisualizacao(buffer: Buffer): Promise<void> {
+    if (buffer.length < 5 || buffer.subarray(0, 5).toString('ascii') !== '%PDF-') {
+      throw new UnprocessableEntityException('O arquivo não é um PDF válido para visualização.');
+    }
+    let tarefa: { promise: Promise<unknown>; destroy: () => Promise<void> } | undefined;
+    const inicio = performance.now();
+    try {
+      const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+      tarefa = pdfjs.getDocument({ data: new Uint8Array(buffer), useSystemFonts: false });
+      const documento = await tarefa.promise as { numPages: number; getPage: (n: number) => Promise<unknown> };
+      if (documento.numPages < 1 || documento.numPages > MAX_PAGES) throw new Error('Quantidade de páginas inválida.');
+      await documento.getPage(1);
+      this.auditoria.registrar('pdf.validacao_visualizacao', {
+        resultado: 'valido', paginas: documento.numPages,
+        duracaoMs: Math.round(performance.now() - inicio)
+      });
+    } catch {
+      this.auditoria.registrar('pdf.validacao_visualizacao', {
+        resultado: 'invalido', duracaoMs: Math.round(performance.now() - inicio)
+      });
+      throw new UnprocessableEntityException('O PDF não pôde ser validado para visualização. Você pode preencher o cadastro manualmente sem anexar o arquivo.');
+    } finally {
+      await tarefa?.destroy().catch(() => undefined);
+    }
+  }
+
   async extrair(buffer: Buffer): Promise<CamposExtraidos> {
     if (buffer.length < 5 || buffer.subarray(0, 5).toString('ascii') !== '%PDF-') {
       throw new UnprocessableEntityException('Não foi possível ler o currículo. Você pode preencher o cadastro manualmente.');

@@ -6,9 +6,10 @@ import { CandidatoRegistro, Persistencia, RecrutadorRegistro } from './persisten
 @Injectable()
 export class PersistenciaMemoriaService implements Persistencia {
   private readonly candidatos = new Map<string, CandidatoRegistro>();
+  private readonly curriculos = new Map<string, Buffer>();
   private readonly recrutadores = new Map<string, RecrutadorRegistro>();
 
-  async criarCandidato(input: CandidatoInput): Promise<CandidatoRegistro> {
+  async criarCandidato(input: CandidatoInput, curriculoPdf?: Buffer): Promise<CandidatoRegistro> {
     const agora = new Date();
     const candidato: CandidatoRegistro = {
       id: randomUUID(),
@@ -17,10 +18,12 @@ export class PersistenciaMemoriaService implements Persistencia {
       telefone: input.telefone || null,
       areaInteresse: input.areaInteresse || null,
       resumoProfissional: input.resumoProfissional || null,
+      temCurriculo: Boolean(curriculoPdf),
       criadoEm: agora,
       atualizadoEm: agora
     };
     this.candidatos.set(candidato.id, candidato);
+    if (curriculoPdf) this.curriculos.set(candidato.id, Buffer.from(curriculoPdf));
     return { ...candidato };
   }
 
@@ -29,8 +32,8 @@ export class PersistenciaMemoriaService implements Persistencia {
       b.criadoEm.getTime() - a.criadoEm.getTime() || b.id.localeCompare(a.id));
     const inicio = (pagina - 1) * limite;
     return {
-      itens: ordenados.slice(inicio, inicio + limite).map(({ id, nomeCompleto, email, areaInteresse, criadoEm }) => ({
-        id, nomeCompleto, email, areaInteresse: areaInteresse ?? '', criadoEm: criadoEm.toISOString()
+      itens: ordenados.slice(inicio, inicio + limite).map(({ id, nomeCompleto, email, areaInteresse, criadoEm, temCurriculo }) => ({
+        id, nomeCompleto, email, areaInteresse: areaInteresse ?? '', criadoEm: criadoEm.toISOString(), temCurriculo
       })),
       pagina,
       limite,
@@ -41,6 +44,20 @@ export class PersistenciaMemoriaService implements Persistencia {
   async buscarCandidatoPorId(id: string): Promise<CandidatoRegistro | null> {
     const candidato = this.candidatos.get(id.toLowerCase());
     return candidato ? { ...candidato } : null;
+  }
+
+  async buscarCurriculoPdf(id: string): Promise<Buffer | null> {
+    const arquivo = this.curriculos.get(id.toLowerCase());
+    return arquivo ? Buffer.from(arquivo) : null;
+  }
+
+  async anexarCurriculoPdf(id: string, curriculoPdf: Buffer): Promise<boolean> {
+    const chave = id.toLowerCase();
+    const candidato = this.candidatos.get(chave);
+    if (!candidato || candidato.temCurriculo) return false;
+    this.curriculos.set(chave, Buffer.from(curriculoPdf));
+    this.candidatos.set(chave, { ...candidato, temCurriculo: true, atualizadoEm: new Date() });
+    return true;
   }
 
   async existeCandidatoComEmail(email: string): Promise<boolean> {

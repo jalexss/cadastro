@@ -20,6 +20,12 @@ export class CandidatoEntity {
   @Column({ name: 'resumo_profissional', type: 'nvarchar', length: 3000, nullable: true })
   resumoProfissional!: string | null;
 
+  @Column({ name: 'tem_curriculo', type: 'bit', default: false })
+  temCurriculo!: boolean;
+
+  @Column({ name: 'curriculo_pdf', type: 'varbinary', length: 'max', nullable: true, select: false })
+  curriculoPdf!: Buffer | null;
+
   @CreateDateColumn({ name: 'criado_em', type: 'datetime2', default: () => 'SYSUTCDATETIME()' })
   criadoEm!: Date;
 

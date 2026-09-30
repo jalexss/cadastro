@@ -7,6 +7,7 @@ export interface CandidatoRegistro extends Omit<CandidatoInput, 'telefone' | 'ar
   telefone: string | null;
   areaInteresse: string | null;
   resumoProfissional: string | null;
+  temCurriculo: boolean;
   criadoEm: Date;
   atualizadoEm: Date;
 }
@@ -18,7 +19,9 @@ export interface RecrutadorRegistro {
 }
 
 export interface Persistencia {
-  criarCandidato(input: CandidatoInput): Promise<CandidatoRegistro>;
+  criarCandidato(input: CandidatoInput, curriculoPdf?: Buffer): Promise<CandidatoRegistro>;
+  anexarCurriculoPdf(id: string, curriculoPdf: Buffer): Promise<boolean>;
+  buscarCurriculoPdf(id: string): Promise<Buffer | null>;
   listarCandidatos(pagina: number, limite: number): Promise<ListaCandidatos>;
   buscarCandidatoPorId(id: string): Promise<CandidatoRegistro | null>;
   existeCandidatoComEmail(email: string): Promise<boolean>;

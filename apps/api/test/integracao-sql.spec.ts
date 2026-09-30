@@ -13,6 +13,7 @@ import { CandidatoEntity } from '../src/database/candidato.entity';
 import { RecrutadorEntity } from '../src/database/recrutador.entity';
 import { CriarTabelaCandidatos1710000000000 } from '../src/database/migrations/1710000000000-CriarTabelaCandidatos';
 import { CriarTabelaRecrutadores1801300000000 } from '../src/database/migrations/1801300000000-CriarTabelaRecrutadores';
+import { AdicionarCurriculoPdf1802000000000 } from '../src/database/migrations/1802000000000-AdicionarCurriculoPdf';
 import { PersistenciaSqlService } from '../src/database/persistencia-sql.service';
 import { databaseOptions } from '../src/database/database.options';
 
@@ -60,7 +61,7 @@ function novaFonte(auditoria: AuditoriaService): DataSource {
     password: conexao.password,
     database: nomeBancoTeste,
     entities: [CandidatoEntity, RecrutadorEntity],
-    migrations: [CriarTabelaCandidatos1710000000000, CriarTabelaRecrutadores1801300000000],
+    migrations: [CriarTabelaCandidatos1710000000000, CriarTabelaRecrutadores1801300000000, AdicionarCurriculoPdf1802000000000],
     migrationsRun: true,
     synchronize: false,
     logger: new LoggerTypeOrmSeguro(auditoria)
